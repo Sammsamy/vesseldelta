@@ -1,6 +1,6 @@
 # Third-party notices
 
-VesselDelta's application and solver code are original to this project. It uses the following direct open-source dependencies. Their licenses apply to those packages, not to VesselDelta's own source code. VesselDelta's project license remains pending explicit owner authorization.
+VesselDelta's application and solver code are original to this project. It uses the following direct open-source dependencies. Their licenses apply to those packages, while VesselDelta's own source code is licensed under the MIT License.
 
 Versions and license identifiers below were read from the installed package metadata pinned by `package-lock.json` on July 21, 2026.
 
