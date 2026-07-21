@@ -36,6 +36,8 @@ SNAP authorization does not transfer to VesselDelta. Before any release mutation
 - [ ] WebGL view, explicit fallback, and reduced-motion behavior.
 - [ ] All four scenarios and both 3D/2D views.
 - [ ] Run all three guided reveals on the public build: observe ratio withholding, wait for the numerical gate, complete `3 / 3`, enter Free explore through the sculpt CTA, and re-enter Guided lab.
+- [ ] Confirm the sculpt CTA moves focus to the computed canvas; use Left/Right to change its announced column and Up/Down to edit the wall and trigger ratio withholding.
+- [ ] With operating-system reduced motion enabled, confirm pressure cues stay static, autonomous vessel motion stops, transitions collapse, and lumen restoration snaps directly to its final geometry.
 - [ ] Wall sculpting, flow drive, pressure-factor separation, restoration, and all four lenses.
 - [ ] Mechanics check, rupture refusal, model card, Verify physics, and source links.
 - [ ] No fresh-load console errors.

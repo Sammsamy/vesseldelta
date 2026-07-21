@@ -98,15 +98,19 @@ After the default guided-lab refactor at source commit `4278a39`, the browser jo
 
 After the final interaction pass, the `1280 × 720` journey was repeated again. The Higher pressure step rendered six outward arrows, a circumferential pulse, and the label `ILLUSTRATIVE FORCE DIRECTION · CFD DRIVE UNCHANGED`; its receipt simultaneously stated that the cue does not deform tissue or alter CFD. The completed lab kept its primary **Sculpt the computed slice** action visible in the 720-pixel frame, and activating it selected **Free explore**, **Computed slice**, and the velocity lens. Vessel-story controls exposed labeled pressed-button-group semantics. The verification dialog received initial focus, wrapped `Shift+Tab` and `Tab` between its last and first controls, closed with Escape, and restored focus to **Verify physics**; the same shared focus manager is used by all three dialogs. The final development log contained no warning or error entry. These exact final-pass checks were desktop-only; the prior mobile check does not substitute for final deployed mobile QA.
 
+A follow-up rendered pass on source commit `6cd3672` exercised the keyboard sculpt path itself. Focus remained on the computed canvas; `ArrowRight` changed its announced target from column 81 to 85; `ArrowDown` edited the wall, changed the visible state to `FIELD RECOMPUTING`, and replaced the comparison text with the gate-withholding message. After a fresh `3 / 3` guided completion, the primary sculpt action moved focus to that same canvas while selecting **Free explore** and **Computed slice**. The development log contained only Vite/React development messages and no warning or error. The current browser-control surface could not emulate the operating-system reduced-motion preference, so the source-level snap path and CSS override still require a deployed preference-enabled check before release.
+
 The production build now code-splits the 3D renderer. In the audited build, the instrument-shell chunk was approximately `52 KiB` raw (`15.6 KiB` gzip) and the lazily loaded Three.js theatre chunk was approximately `532 KiB` raw (`135 KiB` gzip). Vite still reports its conservative `>500 kB` raw-chunk warning for that theatre chunk.
 
 The automated local production smoke check starts the built Vinext server on an isolated port, requires the SSR shell and its model receipt, then fetches all 19 public bundle files and verifies their byte counts against `dist/client`, including the lazy 3D chunk. This proves local bundle completeness, not Cloudflare deployment behavior, cache policy, first-load performance, or cross-browser WebGL support. Release QA should still record:
 
 - WebGL success/fallback on at least two desktop browsers;
 - rotation and keyboard controls;
+- keyboard canvas sculpting, announced target-column changes, and focus handoff from guided completion;
 - 3D-to-2D view switching;
 - sustained visual smoothness while both solvers advance;
 - reduced-motion behavior;
+- instant rather than animated lumen restoration when reduced motion is enabled;
 - performance on an integrated-GPU laptop;
 - the fallback path when WebGL cannot initialize.
 
