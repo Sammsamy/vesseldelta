@@ -18,7 +18,7 @@ Use as the project cover and video-thumbnail fallback.
 
 ### 3. `02-pressure-separation-1280x720.jpg`
 
-**Caption:** Higher illustrative pressure changes a separate pressure–radius circumferential-tension index while CFD flow drive remains unchanged. The ratio is not mm Hg, hoop stress, or patient risk.
+**Caption:** Illustrative outward arrows make pressure direction visible while the `1.33×` pressure–radius circumferential-tension index changes and CFD drive remains unchanged. The cue is not tissue deformation, mm Hg, hoop stress, or patient risk.
 
 ### 4. `03-rupture-boundary.jpg`
 

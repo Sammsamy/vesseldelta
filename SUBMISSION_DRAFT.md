@@ -17,26 +17,22 @@ VesselDelta turns vascular mechanics into a guided live experiment. Predict a na
 
 ## Inspiration
 
-As a third-year medical student, I kept seeing blood pressure, stenosis, aneurysm, and plaque explained with static arrows or one red danger color. Those images hide the most useful question: **what was actually measured or computed?**
+VesselDelta is for early health-professions and physiology learners who need to distinguish velocity, a near-wall gradient proxy, pressure–radius tension, and rupture claims that a model cannot support. As a third-year medical student, I kept seeing those ideas explained with static arrows or one red danger color. Those images hide the most useful question: **what was actually measured or computed?**
 
-I wanted a learner to change one boundary with their own hand, see the field answer, and inspect the model’s limits. The broader need is real. The CDC reports that `48.1%`, or `119.9 million`, U.S. adults met its cited hypertension definition in NHANES 2017–March 2020 estimates. VesselDelta does not diagnose or treat them; it makes one foundational distinction visible: flow-related shear and pressure-driven circumferential wall tension are different quantities. [CDC source](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
+I wanted a learner to change one boundary with their own hand, see the field answer, and inspect the model’s limits. The CDC statistic is context, not evidence that VesselDelta improves learning: `48.1%`, or `119.9 million`, U.S. adults met its cited hypertension definition in NHANES 2017–March 2020 estimates. VesselDelta does not diagnose or treat them; it makes one foundational distinction visible: flow-related shear and pressure-driven circumferential wall tension are different quantities. [CDC source](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 
 ## What it does
 
 The learner can:
 
-- rotate an axisymmetric 3D cutaway derived from the current vessel profile;
-- switch to the current computed `160 × 70` slice and sculpt either wall;
-- explore four clearly bounded stories: **Reference channel**, **Idealized artery narrowing**, **Idealized aortic-like bulge**, and **Higher pressure state**;
-- view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate thin-cylinder pressure–radius wall-tension lens;
-- compare peak speed, the axial near-wall gradient proxy, and vorticity against a simultaneously running reference field;
-- complete the default three-step guided lab whose predict-before-reveal answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
-- run **idealized lumen restoration**, a stent-like geometry counterfactual that reaches the reference lumen and recomputes a reseeded steady field;
-- inspect current FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits;
-- optionally open **Clinical context** for source-linked hypertension burden, sustained lifestyle ranges, and medication mechanism animations without letting those layers compete with the mechanics lab;
-- ask **Can this model predict rupture?** and see exactly why this rigid-wall model cannot answer.
+- complete a three-step predict-before-reveal lab covering a narrowing jet, pressure-versus-flow separation, and the rupture boundary;
+- rotate an axisymmetric 3D cutaway that exposes its current computed `160 × 70` source slice instead of implying 3D CFD;
+- sculpt either wall and compare the edited field with a simultaneously running untouched control;
+- inspect modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate pressure–radius wall-tension lens;
+- explore four bounded stories plus idealized lumen restoration while keeping geometry, treatment, and rupture claims explicit;
+- inspect live numerical gates, equations, test evidence, model limits, and optional source-linked clinical context.
 
-The 3D scene is transparent about its construction. A cell-by-cell 8-bit color map of the current grid appears inside a surface-of-revolution cutaway; signed vorticity stays signed, while the shear and wall-tension lenses are derived display maps. The surrounding rings display axial peak magnitude, not volumetric flow. RBC-shaped objects are massless visual tracers on that plane, driven by sampled `uₓ,uᵧ` with a display-only time scale. Amber marks modeled narrowing geometry, not plaque biology.
+The 3D scene is transparent about its construction. A cell-by-cell 8-bit color map of the current grid appears inside a surface-of-revolution cutaway; signed vorticity stays signed, while the shear and wall-tension lenses are derived display maps. The surrounding rings repeat a layer-specific derived axial sample, not volumetric flow. RBC-shaped objects are massless visual tracers on that plane, driven by sampled `uₓ,uᵧ` with a display-only time scale. Amber marks modeled narrowing geometry, not plaque biology.
 
 The instrument runs locally with no login, upload, server simulation, or paid runtime model call.
 
@@ -46,7 +42,7 @@ The numerical core is an original JavaScript D2Q9 BGK lattice-Boltzmann solver w
 
 Two `160 × 70` fields run under the same flow drive: the edited vessel and the untouched reference. Canvas rendering displays the current velocity and signed vorticity arrays, advects passive tracers, and computes a normalized axial near-wall grid-gradient proxy. It is not a slope-aware clinical WSS measurement. The wall-tension lens is deliberately separate and uses the thin-cylinder dimensionless relation `(P/P0) × (r/r0)`; it is not hoop stress.
 
-Three.js turns the current wall profiles into a rotatable axisymmetric cutaway. It color-encodes the current grid cell by cell in a planar texture and repeats an axial peak-magnitude display around each ring for interpretation. Shear and wall-tension lenses are labeled derived display maps. There is no hidden 3D solve. Ninety-two RBC-inspired forms advance from the current 2D `uₓ,uᵧ` field with a visual time multiplier but contribute no mass or momentum.
+Three.js turns the current wall profiles into a rotatable axisymmetric cutaway. It color-encodes the current grid cell by cell in a planar texture and repeats a layer-specific derived axial sample around each ring for interpretation. Shear and wall-tension lenses remain explicitly derived display maps. There is no hidden 3D solve. Ninety-two RBC-inspired forms advance from the current 2D `uₓ,uᵧ` field with a visual time multiplier but contribute no mass or momentum.
 
 Idealized lumen restoration changes only geometry. It removes the complete narrowing amplitude and rebuilds the field boundary. Because the model has no physical time calibration, the final reference geometry is reseeded as a steady counterfactual rather than treating the transition as a device-deployment timescale. The visual rings do not enter the equations.
 
@@ -66,13 +62,9 @@ RBC-shaped particles create immediate visual recognition, but they can overpromi
 
 A stent-like ring animation is compelling, but a ring mesh is not a medical-device simulation. We constrained the feature to one falsifiable action: restore the idealized lumen to the reference geometry and recompute a steady field. VesselDelta makes no claim about physical deployment time, device mechanics, patient selection, restenosis, embolic risk, or clinical success.
 
-### Teaching hypertension without turning food into instant vessel physics
+### Keeping clinical context outside the solver
 
-The current AHA ranges for DASH-style eating, sodium reduction, and aerobic exercise describe sustained, variable effects. The interface scopes them as approximate averages for adults without hypertension, warns against arithmetically summing the displayed ranges into a personal forecast, and never feeds them into the CFD. [AHA source](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
-
-### Explaining treatment without prescribing
-
-The medication theatre explains high-level ACE inhibitor/ARB, calcium-channel blocker, thiazide, and statin pathways using FDA sources. It includes no dose, efficacy estimate, adverse-effect model, interaction, or recommendation, and it never changes the flow field. [FDA hypertension source](https://www.fda.gov/consumers/health-education-resources/hypertension) · [FDA statin source](https://www.fda.gov/drugs/drug-safety-and-availability/fda-requests-removal-strongest-warning-against-using-cholesterol-lowering-statins-during-pregnancy)
+AHA lifestyle ranges and FDA-sourced medication pathways remain optional context. They describe sustained population evidence and high-level mechanisms without entering the CFD, becoming additive personal forecasts, simulating dose or efficacy, or recommending treatment. [AHA source](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) · [FDA hypertension source](https://www.fda.gov/consumers/health-education-resources/hypertension)
 
 ### Prior art changed the product
 
@@ -84,7 +76,7 @@ Our first claim was that browser blood-flow/WSS tools barely existed. Research d
 - Four vessel stories whose geometry and model boundaries are documented.
 - A second live solver that makes every headline ratio a measured counterfactual rather than a canned score.
 - A full geometry-restoration interaction that reseeds and recomputes the final steady reference geometry instead of presenting a transition as treatment time.
-- Nine automated production/numerical tests, including comparison-ratio withholding, lumen restoration without diameter overshoot, and the worst-case reachable flow/geometry envelope.
+- A 17-test numerical and release suite plus a production smoke check, including inside/outside-gate reachable sculpt paths, comparison-ratio withholding, lumen restoration without diameter overshoot, adversarial gallery fixtures, and the lazily loaded 3D bundle.
 - A reproducible 10,000-step benchmark with `<0.4%` absolute mass-flux mismatch in both healthy and stenosis cases, no counted safety interventions, `1.608×` stenosis peak speed, and a `3.492×` relative axial near-wall gradient proxy.
 - Primary-source receipts for the CDC burden figures, AHA lifestyle ranges, and FDA treatment mechanisms.
 - A rupture interaction whose payoff is a scientifically correct refusal.

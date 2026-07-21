@@ -653,11 +653,19 @@ export function VesselTheatre3D({
         tabIndex={0}
         aria-label="Three-dimensional surface-of-revolution interpretation of the live two-dimensional vessel. Drag or use arrow keys to rotate."
       />
+      {scenario === "hypertension" ? (
+        <div className="pressure-force-cue" aria-hidden="true">
+          <b />
+          <i /><i /><i /><i /><i /><i />
+          <span>ILLUSTRATIVE FORCE DIRECTION · CFD DRIVE UNCHANGED</span>
+        </div>
+      ) : null}
       <div className="theatre-receipt">
         <span><i /> 3D GEOMETRIC INTERPRETATION</span>
-        <strong>Computed-grid color map + axial peak-magnitude ring display</strong>
-        <small>The plane color-encodes the current 2D grid; shear and wall-tension lenses are derived display maps. RBC forms follow that slice as massless tracers with visually scaled time—not cell-resolved blood.{scenario === "stenosis" ? " Amber marks modeled narrowing geometry, not plaque biology." : ""}{stentProgress > 0.005 ? " Gold rings are an illustrative stent cue; the solver receives only the lumen geometry." : ""}</small>
+        <strong>Computed-grid color map + derived axial ring display</strong>
+        <small>The plane color-encodes the current 2D grid; shear and wall-tension lenses are derived display maps. RBC forms follow that slice as massless tracers with visually scaled time—not cell-resolved blood.{scenario === "stenosis" ? " Amber marks modeled narrowing geometry, not plaque biology." : ""}{scenario === "hypertension" ? " Outward pulses illustrate pressure direction only; they do not deform tissue or change CFD." : ""}{stentProgress > 0.005 ? " Gold rings are an illustrative stent cue; the solver receives only the lumen geometry." : ""}</small>
       </div>
+      {scenario !== "hypertension" ? <div className="theatre-interaction-cue" aria-hidden="true">DRAG TO ROTATE · ARROW KEYS</div> : null}
       <div className="theatre-axis" aria-hidden="true"><span>PROXIMAL</span><i /><span>DISTAL</span></div>
       <button type="button" className="slice-jump" onClick={onShowSlice}>Sculpt the computed slice</button>
       {webglError ? (

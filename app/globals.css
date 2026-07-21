@@ -46,6 +46,7 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
+.flow-canvas:focus-visible,
 .clinical-context > summary:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 3px;
@@ -461,6 +462,91 @@ button {
   display: block;
 }
 
+.pressure-force-cue {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.pressure-force-cue b {
+  animation: pressureRing 1.9s ease-in-out infinite;
+  border: 1px solid rgba(255, 189, 112, 0.72);
+  border-radius: 50%;
+  box-shadow: 0 0 34px rgba(255, 112, 139, 0.26), inset 0 0 24px rgba(255, 193, 118, 0.12);
+  height: 31%;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8%;
+}
+
+.pressure-force-cue i {
+  animation: pressureArrow 1.9s ease-in-out infinite;
+  background: linear-gradient(rgba(255, 198, 124, 0), rgba(255, 131, 153, 0.9));
+  height: 46px;
+  position: absolute;
+  top: 28%;
+  width: 1px;
+}
+
+.pressure-force-cue i::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid rgba(255, 145, 157, 0.92);
+  content: "";
+  left: -3px;
+  position: absolute;
+  top: -2px;
+}
+
+.pressure-force-cue i:nth-of-type(1),
+.pressure-force-cue i:nth-of-type(4) { left: 32%; }
+.pressure-force-cue i:nth-of-type(2),
+.pressure-force-cue i:nth-of-type(5) { left: 50%; animation-delay: -0.22s; }
+.pressure-force-cue i:nth-of-type(3),
+.pressure-force-cue i:nth-of-type(6) { left: 68%; animation-delay: -0.44s; }
+.pressure-force-cue i:nth-of-type(n + 4) { top: auto; bottom: 28%; transform: rotate(180deg); }
+
+.pressure-force-cue span {
+  background: rgba(15, 8, 14, 0.68);
+  border: 1px solid rgba(255, 176, 139, 0.2);
+  border-radius: 999px;
+  bottom: 120px;
+  color: #efb5ae;
+  font-size: 7px;
+  font-weight: 800;
+  left: 50%;
+  letter-spacing: 0.13em;
+  padding: 7px 10px;
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@keyframes pressureRing {
+  0%, 100% { opacity: 0.36; transform: translate(-50%, -50%) scale(0.9); }
+  50% { opacity: 0.92; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes pressureArrow {
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 1; }
+}
+
+.theatre-interaction-cue {
+  bottom: 118px;
+  color: #71848c;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+  position: absolute;
+  right: 22px;
+  z-index: 4;
+}
+
 .theatre-receipt strong {
   color: #e1eeec;
   font-family: var(--serif);
@@ -787,7 +873,7 @@ button {
 }
 
 .guided-progress span {
-  color: #667984;
+  color: #8da0aa;
   font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.15em;
@@ -1028,6 +1114,44 @@ button {
   background: #eaf5f2;
   border-color: #eaf5f2;
   color: #071016;
+  grid-column: 1 / -1;
+}
+
+.guided-complete {
+  padding-top: 18px;
+}
+
+.guided-complete .guided-progress {
+  margin: 15px 0 18px;
+}
+
+.guided-complete h2 {
+  font-size: 25px;
+  margin-top: 6px;
+}
+
+.guided-complete .guided-receipt {
+  margin-top: 12px;
+}
+
+.guided-complete .guided-receipt article {
+  padding: 8px 0;
+}
+
+.guided-complete .guided-receipt p {
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.guided-complete .guided-boundary {
+  font-size: 8px;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+
+.guided-complete .guided-footer-actions {
+  margin-top: 10px;
+  padding-top: 0;
 }
 
 .rail-section {
@@ -1798,9 +1922,15 @@ button {
   color: #6f7e87;
   display: flex;
   font-size: 9px;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   justify-content: space-between;
   margin-top: 18px;
   padding-top: 14px;
+}
+
+.evidence-footer > span {
+  margin-right: auto;
 }
 
 .evidence-footer a {
@@ -2276,7 +2406,7 @@ footer a:hover {
 .verification-grid .neutral { color: #71818b; }
 .verification-grid small,
 .limits-grid span {
-  color: #61727d;
+  color: #899ba5;
   display: block;
   font-size: 7px;
   font-weight: 800;
@@ -2386,6 +2516,7 @@ footer a:hover {
   .stage-switcher button { padding: 0 8px; }
   .vessel-theatre-mount { touch-action: pan-y; }
   .theatre-receipt { left: 12px; max-width: min(310px, calc(100% - 24px)); top: 104px; }
+  .pressure-force-cue span { bottom: 108px; max-width: calc(100% - 24px); text-align: center; white-space: normal; }
   .theatre-axis { bottom: 83px; left: 12px; }
   .slice-jump { bottom: 74px; right: 12px; }
   .canvas-instruction { top: 43%; }
@@ -2454,5 +2585,10 @@ footer a:hover {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
   }
+
+  .pressure-force-cue b,
+  .pressure-force-cue i { animation: none; opacity: 0.72; }
 }

@@ -101,17 +101,31 @@ test("constrained sculpting preserves a connected minimum gap and finite field",
   assert.equal(engine.getMetrics().sanitizationCount, 0);
 });
 
-test("the tightest reachable lumen remains inside the numerical gate at maximum exposed flow drive", () => {
+test("the comparison gate accepts one tested tight-lumen path and withholds an irregular reachable shape", () => {
   const engine = new HemoEngine(160, 70, { meanVelocity: 0.020 });
+  const irregular = new HemoEngine(160, 70, { meanVelocity: 0.020 });
+  const control = new HemoEngine(160, 70, { meanVelocity: 0.020 });
   for (let attempt = 0; attempt < 8; attempt += 1) {
     engine.sculpt(82, engine.center + 1, "top");
+    irregular.sculpt(66, irregular.center + 1, "top");
+    irregular.sculpt(98, irregular.center - 1, "bottom");
   }
-  for (let step = 0; step < 10_000; step += 1) engine.step();
+  for (let step = 0; step < 10_000; step += 1) {
+    engine.step();
+    irregular.step();
+    control.step();
+  }
   const metrics = engine.getMetrics();
+  const irregularMetrics = irregular.getMetrics();
+  const controlMetrics = control.getMetrics();
   assert.ok(metrics.minDiameterRatio >= 0.539, `minimum diameter ratio ${metrics.minDiameterRatio}`);
   assert.ok(metrics.mach < 0.1, `Mach ${metrics.mach}`);
   assert.ok(metrics.densitySpread < 0.02, `density spread ${metrics.densitySpread}`);
   assert.ok(metrics.fluxMismatch < 0.02, `flux mismatch ${metrics.fluxMismatch}`);
   assert.equal(metrics.sanitizationCount, 0);
   assert.ok(engine.f.every(Number.isFinite), "distribution contains a non-finite value");
+  assert.equal(comparisonMetricsReady(metrics, controlMetrics), true);
+  assert.ok(irregularMetrics.mach >= 0.1 || irregularMetrics.sanitizationCount > 0);
+  assert.equal(comparisonMetricsReady(irregularMetrics, controlMetrics), false);
+  assert.ok(irregular.f.every(Number.isFinite), "guarded irregular field contains a non-finite value");
 });

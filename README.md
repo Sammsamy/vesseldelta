@@ -11,7 +11,7 @@ The product is deliberately split into two layers:
 
 The interpretive layer never becomes hidden solver input. There is no 3D CFD, blood-cell model, pharmacokinetic model, treatment-response model, plaque-growth model, or rupture model.
 
-## Five-second demo
+## First-minute judge path
 
 1. Start in the default **Guided lab** and predict where a narrowing creates the fastest modeled flow.
 2. Reveal the answer: the app changes the live scenario and keeps comparison ratios blank until both fields pass the numerical gate.
@@ -26,10 +26,11 @@ No sign-in, upload, server simulation, or paid runtime API is required.
 | Element | What VesselDelta does | What it does not claim |
 |---|---|---|
 | Computed slice | Advances two local D2Q9 BGK fields and exposes velocity, vorticity, density, and a normalized axial near-wall gradient proxy | Patient-specific CFD, calibrated clinical WSS, pulsatile blood flow, or 3D secondary flow |
-| 3D interpretation | Revolves the current 2D wall profile into an axisymmetric cutaway; color-encodes the current grid on the cut plane; displays an axial peak-magnitude value around each ring | Raw values, a volumetric solve, reconstructed anatomy, branching vessels, or compliant tissue |
+| 3D interpretation | Revolves the current 2D wall profile into an axisymmetric cutaway; color-encodes the current grid on the cut plane; displays a layer-specific derived axial value around each ring | Raw values, a volumetric solve, reconstructed anatomy, branching vessels, or compliant tissue |
+| Higher-pressure force cue | Draws illustrative outward arrows and a circumferential pulse around the straight cutaway | Tissue deformation, a pressure solve, faster CFD, calibrated force, or rupture risk |
 | RBC-inspired forms | Advances 92 massless visual tracers from sampled `uₓ,uᵧ`, with a display-only time multiplier, while keeping them on the computed plane | Physical time, red-cell mass, hematocrit, deformation, aggregation, collisions, viscosity effects, or cell-resolved rheology |
 | Amber narrowing overlay | Makes the modeled stenosis geometry readable | Histology, plaque composition, plaque growth, calcification, or vulnerability |
-| Idealized lumen restoration | Smoothly reopens the mathematical stenosis to the reference geometry and reseeds the final steady field | A stent simulation, device mechanics, physical deployment time, strut–flow interaction, embolic risk, restenosis, procedural success, or a treatment recommendation |
+| Idealized lumen restoration | Smoothly reopens the mathematical stenosis to the reference geometry and reseeds the final constant-boundary field | A stent simulation, device mechanics, physical deployment time, strut–flow interaction, embolic risk, restenosis, procedural success, or a treatment recommendation |
 | Optional clinical context | Keeps population burden and sustained lifestyle ranges from CDC/AHA sources behind an explicit context drawer | A personal forecast, diagnosis, immediate meal-to-flow response, or additive benefit estimate |
 | Optional medication theatre | Explains high-level pathways for ACE inhibitors/ARBs, calcium-channel blockers, thiazide-type diuretics, and statins without competing with the core guided lab | Dose, efficacy, adverse effects, interactions, PK/PD, prescribing, or an individual response |
 | Rupture boundary | Names the missing inputs and explicitly refuses to animate or predict rupture | Wall failure stress, threshold, probability, timing, or clinical risk |
@@ -76,13 +77,13 @@ The reference vessel is a second solver, not a hard-coded “healthy” number. 
 
 Resetting to **Reference channel** returns the ratios toward `1.00×`. Narrowing the lumen makes independently computed fields separate.
 
-New presets receive a deterministic 5,000-step accelerated warm-up. The browser advances up to 12 LBM iterations per animation frame during that phase, then returns to its normal display cadence. These iterations are numerical convergence work, not physical time; ratios stay blank until warm-up finishes and both fields pass the `2%` absolute flux-mismatch gate.
+New presets receive a deterministic 5,000-step accelerated warm-up. The browser advances up to 12 LBM iterations per animation frame during that phase, then returns to its normal display cadence. These are warm-up iterations, not physical time or proof of formal convergence; ratios stay blank until warm-up finishes and both fields pass the `2%` absolute flux-mismatch gate.
 
-The exposed flow drive is capped at `0.020` lattice units. At the tightest reachable `0.54×` lumen, a 10,000-step envelope test remained at `Ma 0.0942` with zero counted safety interventions. If any live field nevertheless crosses the Mach, density, finite-value, or intervention gate, VesselDelta withholds all comparison cards and directs the learner to **Verify physics**.
+The exposed flow drive is limited to `0.012–0.020` lattice units. In one documented centered tight-lumen sculpt path, a 10,000-step test at `0.020` remained at `Ma 0.0942` with zero counted safety interventions. That is not proof that every reachable hand-drawn shape stays inside the gate: an adversarial offset sculpt at `0.020` crossed it. The live Mach, density, flux, finite-value, and intervention checks therefore remain authoritative; VesselDelta withholds all comparison cards for an out-of-gate field and directs the learner to **Verify physics**.
 
 ## The 3D cutaway
 
-`app/vessel-theatre-3d.tsx` uses Three.js/WebGL to construct a surface of revolution from the active top and bottom wall profiles. The current `160 × 70` grid is converted cell by cell into an 8-bit planar color texture inside that cutaway. Velocity and signed vorticity encode current cells; the shear lens is a derived axial-gradient display fade and wall tension is a separate geometric display. The surrounding surface repeats an axial peak-magnitude value around each ring for interpretation; none of these are a solved 3D velocity volume.
+`app/vessel-theatre-3d.tsx` uses Three.js/WebGL to construct a surface of revolution from the active top and bottom wall profiles. The current `160 × 70` grid is converted cell by cell into an 8-bit planar color texture inside that cutaway. Velocity and signed vorticity encode current cells; the shear lens is a derived axial-gradient display fade and wall tension is a separate geometric display. Around each ring, the surface repeats a layer-specific derived axial sample: interior peak magnitude for velocity/vorticity, the local wall-gradient proxy for shear, or the pressure–radius index for wall tension. None is a solved 3D velocity volume.
 
 The 3D renderer also includes:
 
@@ -115,13 +116,13 @@ The interface illustrates only the direction of pressure and radius under a thin
 
 The burden cards quote the CDC’s June 2, 2026 summary: `48.1%` or `119.9 million` U.S. adults met its cited hypertension definition, and `22.5%` of adults with hypertension had controlled blood pressure, both from NHANES 2017–March 2020 estimates; high blood pressure was also a primary or contributing cause on `680,179` U.S. death certificates in 2024. “Primary or contributing” is not “sole cause.” [CDC: High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 
-The lifestyle cards reproduce the approximate systolic ranges shown in the American Heart Association’s 2025 guide. The interface scopes them as approximate averages for adults without hypertension rather than personal forecasts:
+The lifestyle cards reproduce the approximate systolic ranges shown in the American Heart Association’s 2025 guide. The interface scopes them as approximate averages for adults without hypertension—the population column identified in Table 12 of the full guideline—rather than personal forecasts:
 
 - DASH-style eating pattern: about `3–7 mm Hg`;
 - lower sodium intake: about `1–4 mm Hg`;
 - aerobic exercise: about `2–7 mm Hg`.
 
-These are overlapping, variable, sustained effects. The displayed ranges are not arithmetically summed into a personal forecast, applied to the CFD, or used to forecast an individual; combined effects vary. [AHA: Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) The broader 2025 AHA/ACC guideline strongly recommends heart-healthy eating, sodium reduction, physical activity, and other lifestyle measures while tying medication decisions to clinical context. [AHA/ACC: 2025 High Blood Pressure Guideline—Top Things to Know](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
+These are overlapping, variable, sustained effects. The displayed ranges are not arithmetically summed into a personal forecast, applied to the CFD, or used to forecast an individual; combined effects vary. [AHA: Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) [AHA/ACC: full 2025 guideline, Table 12](https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249) The broader guideline strongly recommends heart-healthy eating, sodium reduction, physical activity, and other lifestyle measures while tying medication decisions to clinical context. [AHA/ACC: Top Things to Know](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 
 ## Medication mechanism theatre
 
@@ -149,7 +150,7 @@ npm run release:verify-local
 
 The automated suite covers:
 
-- production build and server-rendered shell;
+- production build, server-rendered shell, and a local production-server smoke test that fetches every public file including the lazy 3D theatre chunk;
 - straight-channel Poiseuille-profile shape error;
 - low-Mach and density-stability gates;
 - finite distribution values;
@@ -158,8 +159,9 @@ The automated suite covers:
 - aneurysm geometry constraints;
 - independent pressure/radius scaling;
 - minimum-gap preservation during repeated sculpting.
+- adversarial release-gallery fixtures for exact filenames/counts/dimensions, complete JPEG data, distinct content, and the required thumbnail.
 
-The recorded 10,000-step steady benchmark produced `<0.4%` absolute inlet/outlet mass-flux mismatch in both healthy and stenosis presets, with no counted safety interventions. The stenosis reached `1.608×` peak speed and a `3.492×` relative axial near-wall gradient proxy versus the control. Live comparison cards are now withheld while either field is recomputing or remains above the same `2%` flux-mismatch gate. See [VALIDATION.md](./VALIDATION.md) for the exact record and what it does **not** establish.
+The recorded constant-boundary 10,000-step benchmark produced `<0.4%` absolute inlet/outlet mass-flux mismatch in both healthy and stenosis presets, with no counted safety interventions. The stenosis reached `1.608×` peak speed and a `3.492×` relative axial near-wall gradient proxy versus the control. Live comparison cards are now withheld while either field is recomputing or remains above the same `2%` flux-mismatch gate. See [VALIDATION.md](./VALIDATION.md) for the exact record and what it does **not** establish.
 
 The browser verification drawer reads the current solver rather than copying benchmark constants. The numbers vary while a newly edited field evolves. The WebGL layer has no independent clinical or numerical validation: its integrity comes from an inspectable mapping back to the current 2D field.
 
@@ -185,16 +187,15 @@ The contribution is the integrated learning experience: constrained wall sculpti
 
 ## Codex + GPT-5.6 collaboration
 
-VesselDelta was designed and implemented during OpenAI Build Week with Codex and GPT-5.6. The collaboration supported concrete engineering and critique, including:
+VesselDelta was designed and implemented during OpenAI Build Week with Codex and GPT-5.6. Three decisions show how the collaboration changed the result rather than merely generating code:
 
-- prior-art review that rejected the original “browser blood-flow does not exist” premise;
-- derivation and implementation review of D2Q9 BGK collision/streaming and Zou–He boundaries;
-- dynamic-mask, wall-shear, and geometry-restoration failure analysis;
-- the 3D surface-of-revolution renderer and cell-by-cell 8-bit slice mapping;
-- medical-claim narrowing around plaque, treatment, hypertension, and rupture;
-- performance profiling and renderer optimization;
-- accessible interaction, reduced-motion behavior, numerical tests, model card, and educator materials;
-- adversarial review against the competition rubric.
+| Problem | GPT-5.6/Codex contribution | Human decision | Inspectable evidence |
+|---|---|---|---|
+| The original flow slider exposed `0.024`, but hand-sculpted shapes had not been stress-tested. | Tested a centered tight-lumen path at both settings, then added an irregular offset path that deliberately exercises the live refusal gate. | Reduce the exposed range to `0.020`, keep the live diagnostics authoritative, and do not imply the slider cap validates every shape. | The centered 10,000-step path reached `Ma 0.11290` at rejected `0.024` and `Ma 0.09417` at `0.020`; the irregular `0.020` path is withheld. See `VALIDATION.md`, the tests, and Git history. |
+| The first concept claimed browser blood-flow/WSS tools barely existed. | Conducted a hostile prior-art audit across analytic browser tools, LBM demos, SimVascular workflows, and AortaCFD. | Kill the “first browser simulator” claim and focus the contribution on the guided falsifiable learning loop. | The named prior-art section below and the submission’s “What we learned” record the correction. |
+| A 3D renderer could easily imply a solved 3D field. | Audited every visual layer against the actual arrays and helped implement the surface-of-revolution mapping, current-grid plane, massless tracers, and pressure cue. | Keep the 2D source visible, label depth as interpretation, and make rupture a refusal rather than an animation. | Persistent `2D D2Q9 CFD · 3D cutaway · Illustrative` receipt, model card, source mapping, and tests. |
+
+Codex also supported D2Q9/Zou–He implementation review, dynamic-mask and restoration failure analysis, performance profiling, accessible interaction, reduced-motion behavior, medical-claim narrowing, tests, and adversarial rubric review.
 
 There is no runtime model call. The project demonstrates meaningful Codex/GPT-5.6 use in the build itself without imposing paid API dependence on judges or learners.
 

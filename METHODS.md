@@ -4,7 +4,7 @@
 
 VesselDelta solves a deliberately idealized two-dimensional channel-flow problem to build mechanics intuition through controlled within-model comparisons. All CFD values are lattice units. Outputs are normalized or relative unless explicitly stated otherwise.
 
-The product has one numerical source of truth: the current **2D D2Q9 slice**. The 3D cutaway, RBC-inspired objects, scenario names, lifestyle cards, treatment pathways, and rupture-boundary interaction are interpretive layers. They do not add hidden physics to the solver.
+The product has one numerical source of truth: the current **2D D2Q9 slice**. The 3D cutaway, RBC-inspired objects, scenario names, higher-pressure force cue, lifestyle cards, treatment pathways, and rupture-boundary interaction are interpretive layers. They do not add hidden physics to the solver.
 
 ## D2Q9 BGK model
 
@@ -34,7 +34,7 @@ Streaming uses a pull scheme. When a source is solid, the local opposite post-co
 
 The browser advances two `160 × 70` fields under the same flow-drive setting: the editable field and an untouched straight control. The control is recomputed continuously; it is not a table of canned ratios.
 
-The exposed inlet-flow control is limited to `0.012–0.020` lattice units. The upper bound was checked for 10,000 steps at the tightest reachable `0.54×` lumen: the field remained below `Ma 0.10`, finite, within density/flux gates, and free of counted safety interventions.
+The exposed inlet-flow control is limited to `0.012–0.020` lattice units. At the upper bound, one documented centered sculpt path reached the constrained `0.54×` minimum lumen and remained below `Ma 0.10`, finite, within density/flux gates, and free of counted safety interventions for 10,000 steps. This does not validate every reachable wall shape. An adversarial offset sculpt crosses the live gate at `0.020`, and the interface correctly withholds its comparison ratios.
 
 New presets use a deterministic 5,000-step accelerated warm-up before comparison ratios are shown. The browser advances up to 12 LBM iterations per animation frame during that phase, then returns to the normal display cadence. These are numerical iterations, not physical time.
 
@@ -91,10 +91,12 @@ The Three.js layer does not solve another field.
 1. The active top and bottom 2D wall profiles are sampled at 74 axial rings.
 2. Each profile sample is revolved across 32 sides to form an axisymmetric cutaway surface.
 3. The current `160 × 70` grid is converted cell by cell into an 8-bit RGBA `DataTexture` inside the cutaway. Velocity and signed vorticity use current cell values; the shear lens extends the axial wall-gradient proxy into the lumen with a labeled display fade, and wall tension is a separate derived geometric display.
-4. Surface color separately takes an axial peak-magnitude sample from the current 2D field and repeats it around each ring.
+4. Surface color repeats one layer-specific derived axial sample around each ring: interior peak magnitude for velocity/vorticity, the larger local top/bottom axial-gradient proxy for shear, or the local pressure–radius index for wall tension.
 5. The untouched control profile is rendered as a faint wireframe reference.
 
 This mapping provides depth and anatomical intuition without representing a solved volumetric velocity field. It cannot show branch flow, Dean vortices, helical flow, out-of-plane recirculation, or any other 3D secondary-flow phenomenon.
+
+For the Higher pressure story only, CSS overlays draw six outward arrows and a pulsing circumferential ring around the straight cutaway. The cue is labeled `ILLUSTRATIVE FORCE DIRECTION · CFD DRIVE UNCHANGED`, becomes static under reduced-motion preferences, and is never read by the solver. It does not deform the wall, solve pressure, calibrate force, or imply rupture risk.
 
 ## RBC-inspired massless tracers
 
@@ -126,7 +128,7 @@ The interface displays three approximate systolic-blood-pressure ranges from the
 - reduced sodium intake: `1–4 mm Hg`;
 - aerobic exercise: `2–7 mm Hg`.
 
-Source: [AHA, Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf).
+Sources: [AHA, Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) and [AHA/ACC, full 2025 guideline Table 12](https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249).
 
 The interface scopes these as approximate average ranges for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary. They do not modify wall geometry, blood viscosity, flow drive, the illustrative pressure factor, or any person-specific prediction. The 2025 AHA/ACC guideline broadly recommends lifestyle measures in prevention and management while requiring clinical context for treatment decisions. [AHA/ACC guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 
@@ -175,9 +177,11 @@ Accordingly, VesselDelta reports no rupture stress, threshold, probability, or t
 11. the wall-tension helper’s pressure and radius scaling is algebraically independent of the CFD state;
 12. the comparison gate withholds ratios while a field is settling or while either field exceeds `2%` absolute inlet/outlet mass-flux mismatch;
 13. repeated sculpting preserves the minimum gap and a finite, low-Mach field;
-14. the tightest reachable lumen at the maximum exposed `0.020` flow drive remains below `Ma 0.10`, finite, inside density/flux gates, and free of counted safety interventions after 10,000 steps.
+14. a centered minimum-lumen stress path at `0.020` remains inside the numerical gate after 10,000 steps, while a reachable irregular offset path at the same flow is explicitly rejected by `comparisonMetricsReady`.
 
 `tests/rendered-html.test.mjs` separately confirms that the production shell renders the 2D/3D model receipt, treatment theatre, current burden claim, and illustrative label.
+
+`tests/release-audit-gallery.test.mjs` uses isolated synthetic fixtures to prove the release checker rejects missing or renamed covers, extension/content mismatches, extra gallery files, incomplete JPEG data, duplicate content, and wrong dimensions. `scripts/production-smoke.mjs` then starts the built local production server and fetches every public bundle file, including the lazy Three.js theatre chunk, before terminating the server.
 
 These are software, numerical, and directional checks—not anatomical, educational, device, or clinical validation.
 

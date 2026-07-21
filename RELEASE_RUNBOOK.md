@@ -35,6 +35,7 @@ SNAP authorization does not transfer to VesselDelta. Before any release mutation
 - [ ] Mobile viewport and keyboard-access pass.
 - [ ] WebGL view, explicit fallback, and reduced-motion behavior.
 - [ ] All four scenarios and both 3D/2D views.
+- [ ] Run all three guided reveals on the public build: observe ratio withholding, wait for the numerical gate, complete `3 / 3`, enter Free explore through the sculpt CTA, and re-enter Guided lab.
 - [ ] Wall sculpting, flow drive, pressure-factor separation, restoration, and all four lenses.
 - [ ] Mechanics check, rupture refusal, model card, Verify physics, and source links.
 - [ ] No fresh-load console errors.
@@ -51,6 +52,7 @@ SNAP authorization does not transfer to VesselDelta. Before any release mutation
 - [ ] Record the working public build with real spoken audio.
 - [ ] Export below three minutes; target 2:35–2:45 for upload safety.
 - [ ] Confirm the audio says what was built, how Codex was used, and specifically what GPT-5.6 changed.
+- [ ] Confirm the video contains no unlicensed music, logos, footage, fonts, or other third-party material beyond the documented application dependencies and source links.
 - [ ] Upload publicly to YouTube and verify it in a signed-out window.
 - [ ] Record the URL and measured duration in `release-evidence.json`.
 

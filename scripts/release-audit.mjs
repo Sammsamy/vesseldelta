@@ -343,12 +343,16 @@ if (receipt.error) {
     /D2Q9/i,
     /boundar(?:y|ies)/i,
     /extreme-flow control/i,
-    /3D view.*2D source/i,
+    /tight-lumen test/i,
+    /live gate/i,
+    /(?:3D view.*2D source|2D source inside 3D)/i,
     /medical claim/i,
   ].filter((pattern) => pattern.test(spokenVideo)).length;
+  const codexAndGptMentioned = /\bCodex\b[^.]{0,80}\bGPT-5\.6\b/i.test(spokenVideo)
+    || /\bGPT-5\.6\b[^.]{0,80}\bCodex\b/i.test(spokenVideo);
   const codexStoryReady = /## Codex \+ GPT-5\.6 collaboration/i.test(readme)
-    && /\bCodex\b[^.]{0,80}\bGPT-5\.6\b/i.test(spokenVideo)
-    && /\b(?:helped|implemented|stress-tested|caught|forced|narrowed|audited)\b/i.test(spokenVideo)
+    && codexAndGptMentioned
+    && /\b(?:used|helped|implemented|stress-tested|caught|forced|narrowed|audited)\b/i.test(spokenVideo)
     && concreteCodexTerms >= 2;
   checks.push(check(
     "codex_story",

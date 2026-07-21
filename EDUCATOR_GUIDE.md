@@ -37,7 +37,7 @@ The intended answer is **no**. Rotate the cutaway, then choose **Computed slice*
 
 State:
 
-> “This `160 × 70` grid is what the browser computes. The cutaway revolves its wall shape and carries a cell-by-cell color map into 3D. The surrounding ring color is an axial peak-magnitude display. The RBC-shaped objects are massless tracers with visually scaled time, not simulated cells.”
+> “This `160 × 70` grid is what the browser computes. The cutaway revolves its wall shape and carries a cell-by-cell color map into 3D. The surrounding ring color is a layer-specific derived axial display, not a volumetric field. The RBC-shaped objects are massless tracers with visually scaled time, not simulated cells.”
 
 Have students name one phenomenon that therefore cannot be represented: branch flow, out-of-plane vortices, wall compliance, red-cell deformation, or patient anatomy.
 
@@ -115,6 +115,8 @@ The intended answers are: up, up, and no.
 
 Choose **Higher pressure state** and point out that the story initializes a `160/120` illustrative ratio while leaving the straight CFD geometry and flow drive independent. The thin-cylinder `P × r` number is not mm Hg or hoop stress, does not diagnose hypertension, and does not reproduce a person’s blood pressure.
 
+The outward arrows and circumferential pulse are a labeled force-direction cue only. They do not show wall deformation, calibrated force, a pressure solution, or rupture risk; under reduced-motion preferences they remain static.
+
 ### 10:30–11:30 — ask the rupture question
 
 Use guided step 3, then open **Can this model predict rupture?**
@@ -127,7 +129,7 @@ State:
 
 ### 11:30–13:30 — evidence without fake biology
 
-Open the optional **Clinical context** drawer, then inspect the lifestyle cards. The AHA source lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); the interface scopes them as approximate averages for adults without hypertension. Ask why the displayed ranges should not be arithmetically summed into a personal forecast. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
+Open the optional **Clinical context** drawer, then inspect the lifestyle cards. The AHA guide lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); Table 12 of the full guideline identifies the displayed column as adults without hypertension. Ask why the ranges should not be arithmetically summed into a personal forecast. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
 
 Open one medication mechanism. Emphasize that the animation explains a pathway while the CFD remains unchanged. Ask which statement is more defensible:
 
@@ -140,6 +142,7 @@ Sources:
 
 - [CDC High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 - [AHA Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
+- [AHA/ACC full 2025 guideline, Table 12](https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249)
 - [AHA/ACC 2025 High Blood Pressure Guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 - [FDA Hypertension](https://www.fda.gov/consumers/health-education-resources/hypertension)
 - [FDA Statin Drug Safety Communication](https://www.fda.gov/drugs/drug-safety-and-availability/fda-requests-removal-strongest-warning-against-using-cholesterol-lowering-statins-during-pregnancy)

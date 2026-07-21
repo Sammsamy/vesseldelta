@@ -402,6 +402,7 @@ export function VesselDeltaLab() {
   const engineRef = useRef<HemoEngine | null>(null);
   const controlRef = useRef<HemoEngine | null>(null);
   const fieldCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const dialogRef = useRef<HTMLElement | null>(null);
   const particlesRef = useRef<Array<{ x: number; y: number; px: number; py: number; life: number }>>([]);
   const dragSideRef = useRef<"top" | "bottom" | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -442,6 +443,52 @@ export function VesselDeltaLab() {
   const [stentProgress, setStentProgress] = useState(0);
   const [stentStatus, setStentStatus] = useState<"idle" | "deploying" | "restored">("idle");
   const [mechanism, setMechanism] = useState<"ace" | "ccb" | "thiazide" | "statin">("ace");
+  const [keyboardSculptX, setKeyboardSculptX] = useState(80);
+
+  useEffect(() => {
+    if (!verifyOpen && !limitsOpen && !ruptureOpen) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusSelector = "button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+    const focusInitial = window.requestAnimationFrame(() => {
+      (dialog.querySelector<HTMLElement>(focusSelector) ?? dialog).focus();
+    });
+    const closeDialog = () => {
+      if (verifyOpen) setVerifyOpen(false);
+      else if (limitsOpen) setLimitsOpen(false);
+      else setRuptureOpen(false);
+    };
+    const onDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeDialog();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(focusSelector));
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onDialogKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusInitial);
+      document.removeEventListener("keydown", onDialogKeyDown);
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
+  }, [limitsOpen, ruptureOpen, verifyOpen]);
 
   useEffect(() => {
     const engine = new HemoEngine(160, 70, { preset: "stenosis" });
@@ -606,6 +653,14 @@ export function VesselDeltaLab() {
     active.setPreset("stenosis");
     baseline.setPreset("healthy");
     particlesRef.current.forEach((particle) => { particle.life = 0; });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      active.setStenosisRestoration(1);
+      setStentProgress(1);
+      settlingUntilStepRef.current = active.stepCount + PRESET_WARMUP_STEPS;
+      setSettling(true);
+      setStentStatus("restored");
+      return;
+    }
     let step = 0;
     stentTimerRef.current = window.setInterval(() => {
       step += 1;
@@ -729,6 +784,25 @@ export function VesselDeltaLab() {
     dragSideRef.current = null;
   };
 
+  const onCanvasKeyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+    const engine = engineRef.current;
+    if (!engine || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+    event.preventDefault();
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      const direction = event.key === "ArrowLeft" ? -1 : 1;
+      setKeyboardSculptX((current) => clamp(current + direction * 4, engine.buffer + 2, engine.nx - engine.buffer - 3));
+      return;
+    }
+    const ix = clamp(Math.round(keyboardSculptX), 0, engine.nx - 1);
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    engine.sculpt(keyboardSculptX, engine.top[ix] + direction, "top");
+    engine.sculpt(keyboardSculptX, engine.bottom[ix] - direction, "bottom");
+    settlingUntilStepRef.current = engine.stepCount + EDIT_WARMUP_STEPS;
+    setEdited(true);
+    setRevealed(false);
+    setSettling(true);
+  };
+
   const speedRatio = controlMetrics.peakSpeed > 0 ? metrics.peakSpeed / controlMetrics.peakSpeed : 1;
   const shearRatio = controlMetrics.peakShear > 0 ? metrics.peakShear / controlMetrics.peakShear : 1;
   const vorticityRatio = controlMetrics.maxVorticity > 0 ? metrics.maxVorticity / controlMetrics.maxVorticity : 1;
@@ -835,14 +909,13 @@ export function VesselDeltaLab() {
           <p className="hero-deck">Pinch or widen the wall while synchronized local solvers recompute modeled velocity, an axial near-wall gradient proxy, and vorticity against a matched reference.</p>
         </div>
 
-        <div className="story-tabs" role="tablist" aria-label="Vessel stories">
+        <div className="story-tabs" role="group" aria-label="Vessel stories">
           {(["healthy", "stenosis", "aneurysm", "hypertension"] as Scenario[]).map((item) => (
             <button
               key={item}
               type="button"
-              role="tab"
               aria-label={item === "healthy" ? "Reference channel" : item === "stenosis" ? "Idealized artery narrowing" : item === "aneurysm" ? "Idealized aortic-like bulge" : "Higher pressure state"}
-              aria-selected={scenario === item && !(item === "healthy" && edited)}
+              aria-pressed={scenario === item && !(item === "healthy" && edited)}
               className={scenario === item && !(item === "healthy" && edited) ? "active" : ""}
               onClick={() => {
                 setExperienceMode("explore");
@@ -863,8 +936,8 @@ export function VesselDeltaLab() {
               <span className="runtime-pill">{fps || "—"} FPS · {stepsPerSecond || "—"} TWIN STEPS/S</span>
             </div>
             <div className="stage-switcher" role="group" aria-label="Choose anatomical or computed view">
-              <button type="button" className={stageView === "anatomy" ? "active" : ""} onClick={() => setStageView("anatomy")}>3D interpretation</button>
-              <button type="button" className={stageView === "slice" ? "active" : ""} onClick={() => setStageView("slice")}>Computed slice</button>
+              <button type="button" aria-pressed={stageView === "anatomy"} className={stageView === "anatomy" ? "active" : ""} onClick={() => setStageView("anatomy")}>3D interpretation</button>
+              <button type="button" aria-pressed={stageView === "slice"} className={stageView === "slice" ? "active" : ""} onClick={() => setStageView("slice")}>Computed slice</button>
             </div>
             {stageView === "anatomy" ? (
               <Suspense fallback={<div className="theatre-loading"><span>Preparing the 3D interpretation</span></div>}>
@@ -882,24 +955,26 @@ export function VesselDeltaLab() {
             ) : null}
             <div className={`canvas-instruction ${stageView === "slice" && !edited ? "" : "stage-hidden"}`} aria-hidden={edited || stageView !== "slice"}>
               <span className="gesture-ring" />
-              <strong>{edited ? "Keep sculpting" : "Drag either vessel wall"}</strong>
-              <small>The ghost line is the untouched control</small>
+              <strong>{edited ? "Keep sculpting" : "Drag either wall or use arrow keys"}</strong>
+              <small>Left/right choose a column · up/down sculpt · ghost line is the control</small>
             </div>
             <canvas
               ref={canvasRef}
               className={`flow-canvas ${stageView === "slice" ? "stage-active" : "stage-inactive"}`}
+              tabIndex={stageView === "slice" ? 0 : -1}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
-              aria-label={`Live computed two-dimensional flow field. ${interpretation}`}
+              onKeyDown={onCanvasKeyDown}
+              aria-label={`Live computed two-dimensional flow field. Keyboard sculpting: left and right choose a column; up widens and down narrows at column ${Math.round(keyboardSculptX) + 1} of 160. ${interpretation}`}
               aria-hidden={stageView !== "slice"}
             />
             <div className={`flow-direction ${stageView === "slice" ? "" : "stage-hidden"}`}><span>INLET</span><i /><span>FLOW</span></div>
             <div className={`legend ${stageView === "slice" ? "" : "stage-hidden"}`}>
               <span>{layer === "vorticity" ? "NEGATIVE" : "LOW"}</span><i className={`legend-${layer}`} /><span>{layer === "vorticity" ? "POSITIVE" : "HIGH"}</span>
             </div>
-            <div className="canvas-caption" aria-live="polite">
+            <div className="canvas-caption">
               <span className="caption-index">{stageView === "anatomy" ? "3D" : "2D"}</span>
               <p>{stageView === "anatomy" ? `An axisymmetric cutaway wraps a color rendering of the current computed grid without claiming volumetric CFD. ${interpretation}` : interpretation}</p>
             </div>
@@ -912,7 +987,7 @@ export function VesselDeltaLab() {
             </div>
 
             {experienceMode === "guided" ? (
-              <section className="guided-rail" aria-label="Three-step live mechanics lab">
+              <section className={`guided-rail ${challengeComplete ? "guided-complete" : ""}`} aria-label="Three-step live mechanics lab">
                 {challengeComplete ? (
                   <>
                     <div className="guided-progress complete"><span>LAB COMPLETE</span><i /></div>
@@ -925,8 +1000,9 @@ export function VesselDeltaLab() {
                     </div>
                     <p className="guided-boundary">{challengeScore} / {CHALLENGES.length} correct in this local check. This is not a validated assessment or evidence of learning efficacy.</p>
                     <div className="guided-footer-actions">
+                      <button type="button" className="guided-primary" onClick={() => { setExperienceMode("explore"); setStageView("slice"); setLayer("velocity"); window.requestAnimationFrame(() => canvasRef.current?.focus()); }}>Sculpt the computed slice</button>
                       <button type="button" onClick={resetChallenge}>Run again</button>
-                      <button type="button" className="guided-primary" onClick={() => setLimitsOpen(true)}>Open model receipt</button>
+                      <button type="button" onClick={() => setLimitsOpen(true)}>Open model receipt</button>
                     </div>
                   </>
                 ) : (
@@ -1017,7 +1093,7 @@ export function VesselDeltaLab() {
                     <small>Do not confuse pressure with shear</small>
                   </div>
                   <label className="control-row">
-                    <span><b>Flow drive</b><small>sets inlet velocity · capped to verified sculpting envelope</small></span>
+                    <span><b>Flow drive</b><small>sets inlet velocity · live gates withhold out-of-range fields</small></span>
                     <output>{Math.round((flowDrive / 0.018) * 100)}%</output>
                     <input
                       data-testid="flow-drive"
@@ -1131,6 +1207,7 @@ export function VesselDeltaLab() {
         <div className="evidence-footer">
           <span>Ranges overlap · combined effects vary · not a personal forecast</span>
           <a href="https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf" target="_blank" rel="noreferrer">AHA 2025 BP-lowering ranges ↗</a>
+          <a href="https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249" target="_blank" rel="noreferrer">AHA/ACC Table 12 population columns ↗</a>
         </div>
       </section>
 
@@ -1141,9 +1218,9 @@ export function VesselDeltaLab() {
           <p>Medication classes can be taught without pretending this local vessel predicts a person’s response. The animation is illustrative; the CFD remains unchanged unless the learner independently changes geometry or flow drive.</p>
         </div>
         <div className="mechanism-shell">
-          <div className="mechanism-tabs" role="tablist" aria-label="Medication mechanism classes">
+          <div className="mechanism-tabs" role="group" aria-label="Medication mechanism classes">
             {(["ace", "ccb", "thiazide", "statin"] as const).map((item) => (
-              <button key={item} type="button" role="tab" aria-selected={mechanism === item} className={mechanism === item ? "active" : ""} onClick={() => setMechanism(item)}>
+              <button key={item} type="button" aria-pressed={mechanism === item} className={mechanism === item ? "active" : ""} onClick={() => setMechanism(item)}>
                 {item === "ace" ? "ACEi / ARB" : item === "ccb" ? "Calcium blocker" : item === "thiazide" ? "Thiazide" : "Statin"}
               </button>
             ))}
@@ -1190,7 +1267,7 @@ export function VesselDeltaLab() {
 
       {verifyOpen ? (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setVerifyOpen(false)}>
-          <section className="verification-modal" role="dialog" aria-modal="true" aria-labelledby="verification-title" onMouseDown={(event) => event.stopPropagation()}>
+          <section ref={dialogRef} tabIndex={-1} className="verification-modal" role="dialog" aria-modal="true" aria-labelledby="verification-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="modal-close" type="button" onClick={() => setVerifyOpen(false)} aria-label="Close verification">×</button>
             <p className="modal-kicker">LIVE INSTRUMENT CHECKS</p>
             <h2 id="verification-title">Inspect the running model.</h2>
@@ -1211,7 +1288,7 @@ export function VesselDeltaLab() {
 
       {limitsOpen ? (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setLimitsOpen(false)}>
-          <section className="verification-modal limits-modal" role="dialog" aria-modal="true" aria-labelledby="limits-title" onMouseDown={(event) => event.stopPropagation()}>
+          <section ref={dialogRef} tabIndex={-1} className="verification-modal limits-modal" role="dialog" aria-modal="true" aria-labelledby="limits-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="modal-close" type="button" onClick={() => setLimitsOpen(false)} aria-label="Close model limits">×</button>
             <p className="modal-kicker">MODEL CARD · READ BEFORE INTERPRETING</p>
             <h2 id="limits-title">Illustrative mechanics,<br />not personal risk.</h2>
@@ -1229,7 +1306,7 @@ export function VesselDeltaLab() {
 
       {ruptureOpen ? (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setRuptureOpen(false)}>
-          <section className="verification-modal rupture-modal" role="dialog" aria-modal="true" aria-labelledby="rupture-title" onMouseDown={(event) => event.stopPropagation()}>
+          <section ref={dialogRef} tabIndex={-1} className="verification-modal rupture-modal" role="dialog" aria-modal="true" aria-labelledby="rupture-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="modal-close" type="button" onClick={() => setRuptureOpen(false)} aria-label="Close rupture boundary">×</button>
             <p className="modal-kicker">MODEL BOUNDARY · NOT CALCULATED</p>
             <h2 id="rupture-title">This model<br /><em>cannot answer.</em></h2>
