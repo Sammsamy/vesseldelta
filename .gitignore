@@ -41,3 +41,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# local release receipt may contain the primary Codex Session ID and owner attestations
+/release-evidence.json

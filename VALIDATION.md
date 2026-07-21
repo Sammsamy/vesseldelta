@@ -7,12 +7,14 @@ The evidence below supports a stable, reproducible **two-dimensional educational
 ## Reproduce
 
 ```bash
-npm install
+npm ci
 npm test
 npm run benchmark
+npm run release:audit
+npm run release:verify-local
 ```
 
-`npm test` runs TypeScript validation, builds the production app, and executes eight structural, numerical, geometry, envelope, and scaling tests. `npm run benchmark` independently advances the production-resolution reference and stenosis engines for 10,000 steady solver steps each and prints machine-readable JSON.
+`npm test` runs TypeScript validation, builds the production app, and executes eight structural, numerical, geometry, envelope, and scaling tests. `npm run benchmark` independently advances the production-resolution reference and stenosis engines for 10,000 steady solver steps each and prints machine-readable JSON. `npm run release:verify-local` also runs lint, a production-dependency security audit, and the phase-aware release-evidence audit; it does not convert local checks into proof of deployment or submission.
 
 ## Latest local numerical result
 
@@ -49,8 +51,8 @@ The current suite establishes that:
 - both benchmark fields remain inside the intended low-Mach envelope;
 - density variation remains small after settling;
 - all distribution values remain finite and safety interventions are counted;
-- a 40% diameter reduction produces a faster throat jet and larger local shear/vorticity measures than the control;
-- the full idealized lumen-restoration function reaches but does not exceed the reference diameter, stays finite and low-Mach after settling, and brings speed and shear back near the reference;
+- a 40% diameter reduction produces a faster throat jet, a larger axial near-wall gradient proxy, and larger local vorticity than the control;
+- the full idealized lumen-restoration function reaches but does not exceed the reference diameter, stays finite and low-Mach after settling, and brings speed and the axial near-wall gradient proxy back near the reference;
 - the bulge preset expands rather than closes the lumen;
 - pressure, radius, and optional thickness scale algebraically in the helper independently of the CFD; the production wall-tension lens fixes thickness at its reference value;
 - repeated sculpting preserves a connected minimum gap and a finite field;
@@ -121,7 +123,7 @@ Until that checklist is recorded against the deployed URL, numerical green tests
 
 The public-health and treatment copy is traceable to direct institutional sources:
 
-- [CDC High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html): `48.1%`, `119.9 million`, `22.5%` controlled, and `680,179` 2024 death certificates listing high blood pressure as a primary or contributing cause.
+- [CDC High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html): `48.1%`, `119.9 million`, `22.5% of adults with hypertension had controlled blood pressure`, and `680,179` 2024 death certificates listing high blood pressure as a primary or contributing cause.
 - [AHA Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf): approximate systolic ranges for DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`), scoped in the interface as approximate averages for adults without hypertension.
 - [AHA/ACC 2025 High Blood Pressure Guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know): lifestyle measures and the need for clinical context in medication decisions.
 - [FDA Hypertension](https://www.fda.gov/consumers/health-education-resources/hypertension): high-level mechanisms for ACE inhibitors, ARBs, calcium-channel blockers, and diuretics.

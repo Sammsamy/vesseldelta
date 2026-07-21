@@ -1,0 +1,61 @@
+{
+  "_instructions": [
+    "Copy this file to release-evidence.json only when recording real release evidence.",
+    "Do not change false, null, or blank values without direct proof. This template is never treated as evidence.",
+    "Owner-approval fields require explicit VesselDelta-specific authorization; finalSubmissionApproved must remain false until the owner gives final submission approval."
+  ],
+  "schemaVersion": 1,
+  "artifact": {
+    "commit": ""
+  },
+  "license": {
+    "approvedByOwner": false,
+    "spdx": "",
+    "file": "",
+    "sha256": ""
+  },
+  "repository": {
+    "approvedByOwner": false,
+    "url": "",
+    "visibility": "",
+    "privateSharedWith": []
+  },
+  "deployment": {
+    "approvedByOwner": false,
+    "url": "",
+    "commit": "",
+    "publicNoLogin": false,
+    "verifiedAt": "",
+    "availableThrough": ""
+  },
+  "video": {
+    "approvedByOwner": false,
+    "url": "",
+    "public": false,
+    "durationSeconds": null,
+    "realHumanVoice": false,
+    "codexAndGpt56UseSpoken": false,
+    "verifiedAt": ""
+  },
+  "codex": {
+    "primarySessionId": ""
+  },
+  "qa": {
+    "deploymentUrl": "",
+    "verifiedAt": "",
+    "desktopBrowsers": [],
+    "mobileViewports": [],
+    "consoleErrorFree": null,
+    "webglFallbackVerified": false,
+    "reducedMotionVerified": false,
+    "galleryCompared": false
+  },
+  "devpost": {
+    "track": "",
+    "team": "",
+    "country": "",
+    "termsAccepted": false,
+    "finalSubmissionApproved": false,
+    "finalSubmissionApprovedAt": ""
+  }
+}

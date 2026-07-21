@@ -7,9 +7,9 @@
 - **Primary track:** Education
 - **Team:** Individual — Fuzlullah Syed
 - **Demo URL:** pending owner-authorized deployment
-- **Repository:** pending owner-authorized public repository and license
+- **Repository:** pending owner-authorized public licensed repository, or private repository shared with both required judging addresses
 - **Video:** pending recording/upload
-- **Codex session ID:** pending final `/feedback`
+- **Codex session ID:** pending retrieval from the primary build thread with `/status`
 
 ## Short description
 
@@ -29,7 +29,7 @@ The learner can:
 - switch to the current computed `160 × 70` slice and sculpt either wall;
 - explore four clearly bounded stories: **Reference channel**, **Idealized artery narrowing**, **Idealized aortic-like bulge**, and **Higher pressure state**;
 - view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate constant-thickness pressure–radius wall-tension lens;
-- compare peak speed, shear, and vorticity against a simultaneously running reference field;
+- compare peak speed, the axial near-wall gradient proxy, and vorticity against a simultaneously running reference field;
 - complete a three-step predict-before-reveal check whose answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
 - run **idealized lumen restoration**, a stent-like geometry counterfactual that reaches the reference lumen and recomputes a reseeded steady field;
 - inspect current FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits;
@@ -119,17 +119,21 @@ VesselDelta computes a steady 2D Newtonian rigid-wall educational field with no 
 
 It is not clinical CFD, a medical device, diagnosis, advice, a plaque locator, a patient-specific model, a treatment selector, a drug-response calculator, a stent-outcome predictor, or an aneurysm-rupture predictor. No physician review, educator study, or clinical validation was completed before submission.
 
-The solver and product code were written for this project; no third-party LBM source was copied. Numerical methods and public-health sources are cited in the README and METHODS document. License selection remains pending owner authorization.
+VesselDelta was created during the submission period; the current Git history begins July 21, 2026. The solver and product code were written for this project, and no third-party LBM source was copied. Numerical methods and public-health sources are cited in the README and METHODS document. Direct framework and dependency licenses are disclosed in `THIRD_PARTY_NOTICES.md`. VesselDelta's own license selection remains pending owner authorization.
 
 ## Official checklist
 
 - [ ] Public testable demo
-- [ ] Public/shared repository with approved license
-- [ ] README collaboration story
-- [ ] Codex session ID from `/feedback`
+- [ ] Public repository with approved license, or private repository shared with `testing@devpost.com` and `build-week-event@openai.com`
+- [x] Local cover and gallery images with bounded captions
+- [x] README collaboration story
+- [ ] Primary-thread Codex Session ID retrieved with `/status`
 - [ ] Public YouTube video under three minutes with real voiceover
 - [ ] Education category selected
 - [ ] Individual submission
+- [ ] United States selected as country of residence
+- [ ] Final description revised into Fuzlullah's natural voice rather than pasted unchanged
+- [ ] Contest terms reviewed and accepted by Fuzlullah
 - [ ] Final owner approval before Devpost submission
 
 Rules reference: https://openai.devpost.com/rules

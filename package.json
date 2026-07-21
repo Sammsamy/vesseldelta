@@ -12,6 +12,10 @@
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs",
     "benchmark": "node scripts/benchmark.mjs",
+    "release:audit": "node scripts/release-audit.mjs",
+    "release:audit:strict": "node scripts/release-audit.mjs --strict",
+    "secret:scan": "node scripts/secret-scan.mjs",
+    "release:verify-local": "git diff --check && npm run secret:scan && npm run lint && npm test && npm audit --omit=dev && npm run benchmark && npm run release:audit",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {

@@ -91,7 +91,7 @@ The 3D renderer also includes:
 - an amber geometry overlay when the channel is narrowed;
 - a visible but purely illustrative ring representation during lumen restoration;
 - mouse, pointer, and keyboard rotation;
-- a fallback that sends unsupported browsers to the validated 2D slice.
+- a fallback that sends unsupported browsers to the tested, computed 2D slice.
 
 ## Idealized lumen-restoration counterfactual
 
@@ -112,7 +112,7 @@ relative wall-tension index = (P / P0) * (r / r0)
 
 The interface fixes thickness and illustrates only the direction of pressure and radius under a thin, cylindrical, uniform-wall assumption. It is a dimensionless relative index, not calibrated wall stress, tissue failure, rupture probability, or patient risk.
 
-The burden cards quote the CDC’s June 2, 2026 summary: `48.1%` or `119.9 million` U.S. adults met its cited hypertension definition and `22.5%` had it controlled, both from NHANES 2017–March 2020 estimates; high blood pressure was also a primary or contributing cause on `680,179` U.S. death certificates in 2024. “Primary or contributing” is not “sole cause.” [CDC: High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
+The burden cards quote the CDC’s June 2, 2026 summary: `48.1%` or `119.9 million` U.S. adults met its cited hypertension definition, and `22.5%` of adults with hypertension had controlled blood pressure, both from NHANES 2017–March 2020 estimates; high blood pressure was also a primary or contributing cause on `680,179` U.S. death certificates in 2024. “Primary or contributing” is not “sole cause.” [CDC: High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 
 The lifestyle cards reproduce the approximate systolic ranges shown in the American Heart Association’s 2025 guide. The interface scopes them as approximate averages for adults without hypertension rather than personal forecasts:
 
@@ -142,9 +142,8 @@ The **Can this vessel rupture?** interaction answers **no—not from this model*
 Run the complete build and numerical suite:
 
 ```bash
-npm install
-npm test
-npm run benchmark
+npm ci
+npm run release:verify-local
 ```
 
 The automated suite covers:
@@ -190,7 +189,7 @@ VesselDelta was designed and implemented during OpenAI Build Week with Codex and
 - prior-art review that rejected the original “browser blood-flow does not exist” premise;
 - derivation and implementation review of D2Q9 BGK collision/streaming and Zou–He boundaries;
 - dynamic-mask, wall-shear, and geometry-restoration failure analysis;
-- the 3D surface-of-revolution renderer and exact-slice mapping;
+- the 3D surface-of-revolution renderer and cell-by-cell 8-bit slice mapping;
 - medical-claim narrowing around plaque, treatment, hypertension, and rupture;
 - performance profiling and renderer optimization;
 - accessible interaction, reduced-motion behavior, numerical tests, model card, and educator materials;
@@ -198,12 +197,16 @@ VesselDelta was designed and implemented during OpenAI Build Week with Codex and
 
 There is no runtime model call. The project demonstrates meaningful Codex/GPT-5.6 use in the build itself without imposing paid API dependence on judges or learners.
 
-The required Codex session link/ID will be added after `/feedback` is completed for the final build.
+VesselDelta was created during the Build Week submission period. The current Git history begins on July 21, 2026; the solver and product code are original to this project, and no third-party LBM implementation was copied.
+
+The required primary-thread Codex Session ID is pending owner retrieval with `/status`. The Devpost field is labeled `/feedback Codex Session ID`, but the current event FAQ directs entrants to retrieve the ID from the primary build thread with `/status`.
 
 ## Run locally
 
+Prerequisite: Node.js `>=22.13.0`. No account, API key, upload, or sample data is required.
+
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -213,7 +216,13 @@ Production verification:
 npm run build
 npm test
 npm run benchmark
+npm run release:audit
+npm run release:verify-local
 ```
+
+`release:verify-local` runs a high-confidence secret scan, lint, type/build/tests, dependency audit, the 10,000-step benchmark, and the release-evidence audit. `release:audit` distinguishes technical evidence from owner-controlled and external gates. `release:audit:strict` succeeds only when an exact-commit release receipt proves the license/repository route, deployed QA, public demo, public video, primary Session ID, and final owner approval.
+
+The official repository requirement can be met either by a public repository with the authorized project license or by a private repository shared with both `testing@devpost.com` and `build-week-event@openai.com`. VesselDelta currently has neither route because project-specific license and publication authorization remain pending.
 
 ## Repository map
 
@@ -224,9 +233,15 @@ app/vessel-theatre-3d.tsx   Three.js axisymmetric cutaway and massless tracers
 app/globals.css             responsive visual system and accessibility states
 tests/hemo-engine.test.mjs  numerical, geometry, and restoration checks
 tests/rendered-html.test.mjs
+scripts/release-audit.mjs   machine-readable local/external release gate
+scripts/secret-scan.mjs     bounded high-confidence credential scan
+release-evidence.template.json structured receipt schema; never proof by itself
+RELEASE_RUNBOOK.md          owner/external release and submission handoff
 EDUCATOR_GUIDE.md           prediction-to-explanation lesson
 LEARNER_TEST_PROTOCOL.md     optional honest pre/post product-feedback protocol
 METHODS.md                  equations, mappings, assumptions, and protocol
+submission-assets/          verified local cover, gallery images, and captions
+THIRD_PARTY_NOTICES.md       direct dependency versions and license notices
 VALIDATION.md               reproducible benchmark and release evidence
 ```
 
@@ -253,4 +268,4 @@ VALIDATION.md               reproducible benchmark and release evidence
 
 ## License and release status
 
-Local competition build. A public repository license has not yet been selected for VesselDelta. Do not treat authorization for a separate project as authorization for this one. A license and public repository will be added only after the owner explicitly approves them.
+Local competition build. The owner has not yet selected VesselDelta's release route: either a public repository with an approved project license, or a private repository shared with both required judging addresses. No repository publication, deployment, or license claim should be inferred until that choice is explicitly authorized and recorded.

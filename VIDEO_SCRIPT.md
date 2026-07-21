@@ -1,6 +1,6 @@
 # VesselDelta video script
 
-Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument should fill the frame; face camera is optional for the opening and close.
+Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export below three minutes. The working instrument should fill the frame; face camera is optional for the opening and close.
 
 ## Recording setup
 
@@ -21,39 +21,39 @@ Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument s
 
 > I’m Fuzlullah, a third-year medical student. This is VesselDelta. Change a vessel, and live flow answers.
 
-### 0:08–0:28 — make the 2D-to-3D contract visible
+### 0:08–0:25 — make the 2D-to-3D contract visible
 
 **Action:** Rotate the narrowing once. Point to the model receipt. Click **Computed slice**.
 
 **Say:**
 
-> It looks three-dimensional, but the honest part matters: the flow solve is two-dimensional. This cutaway revolves the wall shape, and its plane color-encodes the current D2Q9 grid. The surrounding ring color shows axial peak magnitude. The red-cell shapes are massless tracers with visually scaled time, not simulated blood cells.
+> It looks three-dimensional, but the flow solve is two-dimensional. The cutaway revolves its wall shape, and the plane color-encodes the D2Q9 grid. The red-cell shapes are massless visual tracers, not simulated blood cells.
 
-### 0:28–0:48 — prove the live counterfactual
+### 0:25–0:43 — prove the live counterfactual
 
 **Action:** Let the stenosis field develop. Point to the ghost outline and the three comparison tiles. Switch from **Modeled velocity** to **Shear proxy**, then briefly to **Vorticity**.
 
 **Say:**
 
-> A second untouched vessel runs beside every edit under the same flow drive. The narrowing creates a faster throat jet, a larger axial near-wall gradient proxy, and a different downstream turning field. Those are computed ratios, not a scripted score or clinical wall-shear measurement.
+> A second untouched vessel runs beside every edit. Narrowing creates a faster throat jet, a larger axial near-wall gradient proxy, and altered downstream turning. These are computed ratios, not clinical wall shear.
 
-### 0:48–1:04 — show the restoration boundary
+### 0:43–0:57 — show the restoration boundary
 
 **Action:** Return to **3D interpretation**. Click **Idealized lumen restoration** and let the lumen reach the reference shape.
 
 **Say:**
 
-> This is an idealized steady-geometry counterfactual. The lumen reaches the reference shape, then the final field is reseeded and recomputed. The transition is not physical device time, a recommendation, or a prediction of patient outcome.
+> Restoration is a steady geometry counterfactual. It reopens the lumen, reseeds the final field, and recomputes. It is not device deployment, treatment advice, or a patient-outcome prediction.
 
-### 1:04–1:24 — separate pressure from shear
+### 0:57–1:17 — separate pressure from shear
 
 **Action:** Choose **Idealized aortic-like bulge**, select **Wall tension**, and raise the illustrative pressure factor. Then choose **Higher pressure state**.
 
 **Say:**
 
-> Flow shear acts along the wall. Pressure-driven tension acts around it. This separate constant-thickness relation shows how pressure and radius change a relative tension index without secretly making the CFD run faster. The pressure number is a ratio, not millimeters of mercury, and this is not a tissue-stress or rupture model.
+> Flow shear acts along the wall; pressure-driven tension acts around it. This separate relation shows how pressure and radius change a relative tension index without changing CFD speed. It is dimensionless, not millimeters of mercury, tissue stress, or rupture risk.
 
-### 1:24–1:36 — turn refusal into a feature
+### 1:17–1:29 — turn refusal into a feature
 
 **Action:** Click **Can this vessel rupture?** and hold on the missing-input cards.
 
@@ -61,7 +61,7 @@ Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument s
 
 > So can this vessel rupture? This model cannot answer. It has no measured wall thickness, tissue strength, growth history, or fluid–structure coupling. A dramatic tear here would be fiction.
 
-### 1:36–1:53 — connect to the real burden
+### 1:29–1:45 — connect to the real burden
 
 **Action:** Scroll through the CDC burden cards and the three AHA lifestyle cards.
 
@@ -69,7 +69,7 @@ Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument s
 
 > The CDC reports a 119.9-million-adult estimate from 2017 through early 2020. The lifestyle cards show AHA ranges, scoped here as approximate averages for adults without hypertension. They overlap, vary, and are never added or fed into the flow model.
 
-### 1:53–2:08 — explain medicine without prescribing
+### 1:45–1:59 — explain medicine without prescribing
 
 **Action:** Open the ACE inhibitor/ARB mechanism, then click **Thiazide** and **Statin**.
 
@@ -77,7 +77,7 @@ Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument s
 
 > Medication theatre explains pathways without pretending to prescribe. These FDA-sourced animations contain no dose, efficacy forecast, or personal response, and they do not alter the CFD. No physician review or clinical validation was completed.
 
-### 2:08–2:27 — show the proof
+### 1:59–2:18 — show the proof
 
 **Action:** Open **Verify physics**. Point to FPS, Mach number, profile error, density, finite-field card, and `160 × 70 × 2`.
 
@@ -85,17 +85,18 @@ Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument s
 
 > The model is inspectable. Judges can see both local fields, the low-Mach gate, density stability, a fitted Poiseuille-profile check, and every numerical safety intervention. The repository includes eight automated tests and a reproducible ten-thousand-step benchmark.
 
-### 2:27–2:35 — Codex and close
+### 2:18–2:42 — Codex decisions and close
 
 **Action:** Return to the rotating cutaway and title.
 
 **Say:**
 
-> Codex with GPT-5.6 helped build and challenge every layer. VesselDelta: shape the vessel, and watch the flow answer.
+> Codex with GPT-5.6 helped implement and stress-test the D2Q9 boundaries, caught an unstable extreme-flow control, and forced the 3D view to reveal its 2D source. It also narrowed every medical claim. That workflow is preserved in the repository and primary session. VesselDelta: shape the vessel, and watch the flow answer.
 
 ## Natural delivery notes
 
 - Say “two-dimensional” once before using “2D.”
+- Rehearse the final Codex sentence at a natural pace; do not rush it to beat the limit.
 - Slow down on “not a device simulation” and “this model cannot answer.” Those are strengths, not apologies.
 - Do not read every metric. Point while speaking.
 - If a field is still settling, wait silently before the take instead of calling it a final result.
