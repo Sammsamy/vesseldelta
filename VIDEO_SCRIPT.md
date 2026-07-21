@@ -1,105 +1,133 @@
 # VesselDelta video script
 
-Target: **2 minutes 15 seconds**. Real voiceover. Face camera is optional for the first and last five seconds; the working instrument should dominate the video.
+Target: **2 minutes 35 seconds**. Use a real voiceover. The working instrument should fill the frame; face camera is optional for the opening and close.
 
 ## Recording setup
 
 - Browser at 1280×720 or 1440×900.
-- Start on **Healthy control**, **Velocity**, default flow drive, default pressure factor.
-- Keep cursor near the upper vessel wall.
-- Record system audio only if you add subtle sound later; voice clarity matters more.
-- Do one uninterrupted screen capture if possible, then trim pauses.
-- Never say “predicts,” “diagnoses,” “shows where plaque forms,” “rupture risk,” “patient-specific,” “first browser CFD,” or “industry-shattering.”
+- Start on **Idealized artery narrowing**, **3D interpretation**, **Modeled velocity**, default flow drive, and default illustrative pressure factor.
+- Confirm the 3D cutaway rotates smoothly before recording.
+- Keep **Computed slice**, **Idealized lumen restoration**, **Verify physics**, and **Can this vessel rupture?** in a practiced click path.
+- Record a clean take with natural pauses, then trim dead time.
+- Do not claim 3D CFD, simulated blood cells, real plaque, treatment efficacy, immediate diet effects, rupture prediction, patient specificity, or “the first browser blood-flow simulator.”
 
 ## Script and actions
 
-### 0:00–0:08 — cold open
+### 0:00–0:08 — open on the instrument
 
-**Action:** Start on the working vessel. Immediately click **Stenosis**.
-
-**Say:**
-
-> Pinch an artery, and the flow answers. This is VesselDelta, a live vascular-mechanics instrument running entirely in my browser.
-
-### 0:08–0:27 — prove the core
-
-**Action:** Let the jet develop. Point to the ghost outline and three comparison tiles.
+**Action:** Begin on the rotating reference cutaway. Click **Idealized artery narrowing**.
 
 **Say:**
 
-> The color and tracers come from a real D2Q9 lattice-Boltzmann solve. Beside it, a second untouched vessel runs under the same conditions, so these are measured differences—not hard-coded scores. The narrowing creates a faster throat jet and a larger wall-shear estimate.
+> I’m Fuzlullah, a third-year medical student. This is VesselDelta. Change a vessel, and live flow answers.
 
-### 0:27–0:43 — change the lens
+### 0:08–0:28 — make the 2D-to-3D contract visible
 
-**Action:** Click **Vorticity**, then **Wall shear**.
-
-**Say:**
-
-> Velocity, local turning, and wall shear are different fields. A bright throat and the downstream flow do not tell the same mechanical story, and color never means “disease here.”
-
-### 0:43–0:58 — make it tactile
-
-**Action:** Click **Healthy control**, then drag one wall inward and release.
+**Action:** Rotate the narrowing once. Point to the model receipt. Click **Computed slice**.
 
 **Say:**
 
-> I can also sculpt the wall directly. The boundary, flow field, and untouched counterfactual update while I drag.
+> It looks three-dimensional, but the honest part matters: the flow solve is two-dimensional. This cutaway revolves the wall shape, and its plane color-encodes the current D2Q9 grid. The surrounding ring color shows axial peak magnitude. The red-cell shapes are massless tracers with visually scaled time, not simulated blood cells.
 
-### 0:58–1:20 — hypertension insight without overclaiming
+### 0:28–0:48 — prove the live counterfactual
 
-**Action:** Click **Aneurysm**, choose **Wall load**, raise the relative pressure factor to `1.50×`.
-
-**Say:**
-
-> Here is the lesson I wanted as a medical student. Flow-related shear and pressure-driven wall load are not the same force. This separate thin-wall relation shows how pressure and radius multiply circumferential load. It does not change the CFD, and it is not a rupture predictor.
-
-### 1:20–1:41 — visible verification
-
-**Action:** Open **Verify physics**. Slowly point at FPS, Mach, profile error, density, and no-intervention cards.
+**Action:** Let the stenosis field develop. Point to the ghost outline and the three comparison tiles. Switch from **Modeled velocity** to **Shear proxy**, then briefly to **Vorticity**.
 
 **Say:**
 
-> The instrument is falsifiable. Judges can inspect the equation, live frame rate, low-Mach gate, density stability, fitted Poiseuille profile shape, and every numerical safety intervention. The full 10,000-step benchmark and tests are in the repository.
+> A second untouched vessel runs beside every edit under the same flow drive. The narrowing creates a faster throat jet, a larger axial near-wall gradient proxy, and a different downstream turning field. Those are computed ratios, not a scripted score or clinical wall-shear measurement.
 
-### 1:41–1:56 — honest scope
+### 0:48–1:04 — show the restoration boundary
 
-**Action:** Open **Read the model card**.
-
-**Say:**
-
-> This is a two-dimensional Newtonian, rigid-wall learning model—not clinical CFD, diagnosis, plaque location, or patient risk. No physician review or clinical validation was performed.
-
-### 1:56–2:10 — Codex story
-
-**Action:** Return to the hero or briefly show the README collaboration section.
+**Action:** Return to **3D interpretation**. Click **Idealized lumen restoration** and let the lumen reach the reference shape.
 
 **Say:**
 
-> Codex with GPT-5.6 helped build and audit the solver, interaction, medical language, tests, and performance. That audit made us reject a false novelty claim, remove an unreliable pulse feature, and optimize the first build from five to sixty frames per second.
+> This is an idealized steady-geometry counterfactual. The lumen reaches the reference shape, then the final field is reseeded and recomputed. The transition is not physical device time, a recommendation, or a prediction of patient outcome.
 
-### 2:10–2:15 — close
+### 1:04–1:24 — separate pressure from shear
 
-**Action:** End on the stenosis field and title.
+**Action:** Choose **Idealized aortic-like bulge**, select **Wall tension**, and raise the illustrative pressure factor. Then choose **Higher pressure state**.
 
 **Say:**
 
-> VesselDelta. Shape the vessel. Watch the flow answer.
+> Flow shear acts along the wall. Pressure-driven tension acts around it. This separate constant-thickness relation shows how pressure and radius change a relative tension index without secretly making the CFD run faster. The pressure number is a ratio, not millimeters of mercury, and this is not a tissue-stress or rupture model.
+
+### 1:24–1:36 — turn refusal into a feature
+
+**Action:** Click **Can this vessel rupture?** and hold on the missing-input cards.
+
+**Say:**
+
+> So can this vessel rupture? This model cannot answer. It has no measured wall thickness, tissue strength, growth history, or fluid–structure coupling. A dramatic tear here would be fiction.
+
+### 1:36–1:53 — connect to the real burden
+
+**Action:** Scroll through the CDC burden cards and the three AHA lifestyle cards.
+
+**Say:**
+
+> The CDC reports a 119.9-million-adult estimate from 2017 through early 2020. The lifestyle cards show AHA ranges, scoped here as approximate averages for adults without hypertension. They overlap, vary, and are never added or fed into the flow model.
+
+### 1:53–2:08 — explain medicine without prescribing
+
+**Action:** Open the ACE inhibitor/ARB mechanism, then click **Thiazide** and **Statin**.
+
+**Say:**
+
+> Medication theatre explains pathways without pretending to prescribe. These FDA-sourced animations contain no dose, efficacy forecast, or personal response, and they do not alter the CFD. No physician review or clinical validation was completed.
+
+### 2:08–2:27 — show the proof
+
+**Action:** Open **Verify physics**. Point to FPS, Mach number, profile error, density, finite-field card, and `160 × 70 × 2`.
+
+**Say:**
+
+> The model is inspectable. Judges can see both local fields, the low-Mach gate, density stability, a fitted Poiseuille-profile check, and every numerical safety intervention. The repository includes eight automated tests and a reproducible ten-thousand-step benchmark.
+
+### 2:27–2:35 — Codex and close
+
+**Action:** Return to the rotating cutaway and title.
+
+**Say:**
+
+> Codex with GPT-5.6 helped build and challenge every layer. VesselDelta: shape the vessel, and watch the flow answer.
+
+## Natural delivery notes
+
+- Say “two-dimensional” once before using “2D.”
+- Slow down on “not a device simulation” and “this model cannot answer.” Those are strengths, not apologies.
+- Do not read every metric. Point while speaking.
+- If a field is still settling, wait silently before the take instead of calling it a final result.
+- If the 3D view stutters, record the computed slice as the primary demo and use a short pre-verified 3D shot. Do not claim a frame rate you did not measure on the final build.
+
+## YouTube description sources
+
+Include these direct links below the video:
+
+- CDC High Blood Pressure Facts: https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html
+- AHA Better Blood Pressure Health guide: https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf
+- AHA/ACC 2025 High Blood Pressure Guideline summary: https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know
+- FDA Hypertension: https://www.fda.gov/consumers/health-education-resources/hypertension
+- FDA Statin Drug Safety Communication: https://www.fda.gov/drugs/drug-safety-and-availability/fda-requests-removal-strongest-warning-against-using-cholesterol-lowering-statins-during-pregnancy
+- Numerical methods and limitations: link the public README and METHODS pages after deployment.
 
 ## Backup 90-second cut
 
-If time is short, keep only:
+If a shorter version is needed, keep:
 
-1. stenosis cold open;
-2. velocity → shear toggle;
-3. aneurysm + separate pressure factor;
-4. verification drawer;
-5. Codex sentence and end card.
+1. the 3D-to-2D receipt;
+2. stenosis with live control ratios;
+3. the idealized lumen-restoration boundary;
+4. pressure versus shear and the rupture refusal;
+5. Verify physics;
+6. one sentence on source-linked evidence and Codex.
 
 ## On-camera option
 
-Use your face for only these lines:
+Use your face only for:
 
-- Opening: “I am a third-year medical student, and I wanted to make vascular mechanics something you can touch.”
-- Closing: “VesselDelta. Shape the vessel. Watch the flow answer.”
+- Opening: “I’m Fuzlullah, a third-year medical student. I wanted vascular mechanics to be something you could touch.”
+- Closing: “VesselDelta. Shape the vessel, and watch the flow answer.”
 
 Everything between should show the instrument at readable size.

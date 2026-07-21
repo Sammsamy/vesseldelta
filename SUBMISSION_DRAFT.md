@@ -13,87 +13,112 @@
 
 ## Short description
 
-VesselDelta is a live vascular-mechanics instrument. Pinch or widen an idealized artery while two synchronized lattice-Boltzmann fluid solvers compute the edited vessel and healthy control locally in your browser, then compare velocity, vorticity, and normalized wall shear. A separate pressure–radius wall-load lens teaches why blood pressure and flow shear are related physiologically but are not the same mechanical force.
+VesselDelta turns vascular mechanics into a hands-on experiment. Rotate an illustrative 3D vessel cutaway, open and sculpt the current 2D D2Q9 grid beneath it, compare the edited field with a second live reference, and learn why modeled velocity, an axial near-wall gradient proxy, and relative pressure–radius wall tension are different—and why none of them can predict rupture here.
 
 ## Inspiration
 
-“Blood binds a vessel” is usually taught with static arrows, and hypertension is often represented by a red number. Those explanations hide the causal mechanics. We wanted a learner to change one variable with their own hand and watch the field answer, while being able to inspect whether the simulation is real.
+As a third-year medical student, I kept seeing blood pressure, stenosis, aneurysm, and plaque explained with static arrows or one red danger color. Those images hide the most useful question: **what was actually measured or computed?**
+
+I wanted a learner to change one boundary with their own hand, see the field answer, and inspect the model’s limits. The broader need is real. The CDC reports that `48.1%`, or `119.9 million`, U.S. adults met its cited hypertension definition in NHANES 2017–March 2020 estimates. VesselDelta does not diagnose or treat them; it makes one foundational distinction visible: flow-related shear and pressure-driven circumferential wall tension are different quantities. [CDC source](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 
 ## What it does
 
 The learner can:
 
-- drag either vessel wall or choose healthy, stenosis, and aneurysm presets;
-- see the locally computed velocity field and advected tracer particles;
-- switch to vorticity and a normalized wall-shear estimate;
-- compare peak speed, shear, and vorticity against a simultaneously running healthy control;
-- make a prediction before revealing the stenosis result;
-- adjust flow drive independently from a simplified pressure–radius wall-load relation;
-- inspect live FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits.
+- rotate an axisymmetric 3D cutaway derived from the current vessel profile;
+- switch to the current computed `160 × 70` slice and sculpt either wall;
+- explore four clearly bounded stories: **Reference channel**, **Idealized artery narrowing**, **Idealized aortic-like bulge**, and **Higher pressure state**;
+- view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate constant-thickness pressure–radius wall-tension lens;
+- compare peak speed, shear, and vorticity against a simultaneously running reference field;
+- complete a three-step predict-before-reveal check whose answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
+- run **idealized lumen restoration**, a stent-like geometry counterfactual that reaches the reference lumen and recomputes a reseeded steady field;
+- inspect current FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits;
+- explore source-linked hypertension burden, sustained lifestyle ranges, and medication mechanism animations;
+- ask **Can this vessel rupture?** and see exactly why this rigid-wall model cannot answer.
+
+The 3D scene is transparent about its construction. A cell-by-cell 8-bit color map of the current grid appears inside a surface-of-revolution cutaway; signed vorticity stays signed, while the shear and wall-tension lenses are derived display maps. The surrounding rings display axial peak magnitude, not volumetric flow. RBC-shaped objects are massless visual tracers on that plane, driven by sampled `uₓ,uᵧ` with a display-only time scale. Amber marks modeled narrowing geometry, not plaque biology.
 
 The instrument runs locally with no login, upload, server simulation, or paid runtime model call.
 
 ## How we built it
 
-The core is an original JavaScript D2Q9 BGK lattice-Boltzmann solver with pull streaming, halfway bounce-back rigid walls, a parabolic Zou–He velocity inlet, and fixed-density Zou–He outlet. The editable lumen is represented by constrained smooth wall profiles. Pointer edits update the solid mask while newly opened fluid nodes warm-start from neighboring equilibrium values.
+The numerical core is an original JavaScript D2Q9 BGK lattice-Boltzmann solver with pull streaming, halfway bounce-back rigid walls, a parabolic Zou–He velocity inlet, and fixed-density Zou–He outlet. The editable lumen uses constrained smooth wall profiles. Pointer edits rebuild the solid mask while newly opened fluid nodes warm-start from neighboring equilibrium values.
 
-The UI runs two `160 × 70` fields under identical conditions: the edited vessel and the untouched counterfactual. Canvas rendering turns the calculated velocity and vorticity arrays into the field and advects visible tracers from the same computed velocities. A near-wall velocity-gradient estimate produces the normalized shear lens. The pressure-load lens is deliberately separate and uses the dimensionless thin-wall relation `(P/P0) × (r/r0) × (t0/t)`.
+Two `160 × 70` fields run under the same flow drive: the edited vessel and the untouched reference. Canvas rendering displays the current velocity and signed vorticity arrays, advects passive tracers, and computes a normalized axial near-wall grid-gradient proxy. It is not a slope-aware clinical WSS measurement. The wall-tension lens is deliberately separate and, with thickness fixed, uses the dimensionless relation `(P/P0) × (r/r0)`.
 
-Codex with GPT-5.6 helped implement and adversarially audit the numerical method, boundary conditions, geometry editing, performance, medical claims, accessibility, validation, and submission framing.
+Three.js turns the current wall profiles into a rotatable axisymmetric cutaway. It color-encodes the current grid cell by cell in a planar texture and repeats an axial peak-magnitude display around each ring for interpretation. Shear and wall-tension lenses are labeled derived display maps. There is no hidden 3D solve. Ninety-two RBC-inspired forms advance from the current 2D `uₓ,uᵧ` field with a visual time multiplier but contribute no mass or momentum.
+
+Idealized lumen restoration changes only geometry. It removes the complete narrowing amplitude and rebuilds the field boundary. Because the model has no physical time calibration, the final reference geometry is reseeded as a steady counterfactual rather than treating the transition as a device-deployment timescale. The visual rings do not enter the equations.
+
+Codex with GPT-5.6 helped implement and adversarially audit the solver, boundary conditions, geometry editing, 2D-to-3D mapping, performance, medical claims, accessibility, tests, and submission framing.
 
 ## Challenges
 
+### Making 3D more honest than a flat screenshot
+
+Adding depth could easily have turned a 2D model into a fake 3D-CFD claim. The solution was to make the mapping visible: a computed-grid color plane inside a surface generated from the same wall profile, plus a persistent `2D D2Q9 CFD · 3D cutaway · Illustrative` receipt. Depth improves intuition without changing what was calculated.
+
+### Showing blood cells without claiming blood-cell physics
+
+RBC-shaped particles create immediate visual recognition, but they can overpromise rheology. Every tracer remains massless, stays on the computed plane, samples only `uₓ,uᵧ`, and is labeled as a visual guide. The model card explicitly excludes hematocrit, cell deformation, aggregation, and non-Newtonian blood.
+
+### Showing a geometry intervention without faking efficacy
+
+A stent-like ring animation is compelling, but a ring mesh is not a medical-device simulation. We constrained the feature to one falsifiable action: restore the idealized lumen to the reference geometry and recompute a steady field. VesselDelta makes no claim about physical deployment time, device mechanics, patient selection, restenosis, embolic risk, or clinical success.
+
+### Teaching hypertension without turning food into instant vessel physics
+
+The current AHA ranges for DASH-style eating, sodium reduction, and aerobic exercise describe sustained, variable effects. The interface scopes them as approximate averages for adults without hypertension, marks them as overlapping and non-additive, and never feeds them into the CFD. [AHA source](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
+
+### Explaining treatment without prescribing
+
+The medication theatre explains high-level ACE inhibitor/ARB, calcium-channel blocker, thiazide, and statin pathways using FDA sources. It includes no dose, efficacy estimate, adverse-effect model, interaction, or recommendation, and it never changes the flow field. [FDA hypertension source](https://www.fda.gov/consumers/health-education-resources/hypertension) · [FDA statin source](https://www.fda.gov/drugs/drug-safety-and-availability/fda-requests-removal-strongest-warning-against-using-cholesterol-lowering-statins-during-pregnancy)
+
 ### Prior art changed the product
 
-Our first claim was that browser blood-flow/WSS tools barely existed. Research disproved it: analytic browser hemodynamics and browser LBM obstacle demos already exist. We changed the contribution to the complete causal learning loop: direct constrained vessel sculpting, continuously recomputed local CFD, a synchronized control, two mechanically distinct force lessons, prediction-before-reveal, and visible numerical verification.
-
-### Pretty was initially slow
-
-The first glow renderer measured about 5 FPS. The issue was not the solver; it was high-DPI canvas work, per-pixel color allocation, and hundreds of blurred wall segments. We introduced color lookup tables, reusable image buffers, a one-pass wall glow, lower-cost particles, and a bounded device-pixel ratio. The same browser then held 60 FPS while advancing both fields at approximately 240 combined steps/s.
-
-### We removed a feature that looked impressive
-
-An accelerated pulse/oscillation mode generated boundary-reflection artifacts at demo speed. Instead of presenting those colors as biology, we removed the feature and shipped a stable steady model. That decision is documented because scientific restraint is part of the product.
-
-### Medical language had to be narrower
-
-A 2D rigid-wall model cannot show where plaque will form or predict aneurysm rupture. VesselDelta consistently says “normalized wall-shear estimate,” keeps pressure separate from flow drive, counts numerical guard events, exposes a model card, and makes no diagnostic claim.
+Our first claim was that browser blood-flow/WSS tools barely existed. Research disproved it: analytic browser hemodynamics and browser LBM demos already exist. We changed the contribution to the complete learning loop: direct constrained vessel sculpting, continuously recomputed CFD, a synchronized control, an inspectable 2D-to-3D translation, two mechanically distinct force lessons, treatment and lifestyle interpretation with hard boundaries, prediction-before-reveal, and visible numerical verification.
 
 ## Accomplishments
 
-- Real editable-boundary CFD at 60 FPS in a normal browser.
-- A second live solver makes every headline number a measured counterfactual rather than a canned baseline.
-- Six automated production/numerical tests pass.
-- A reproducible 10,000-step benchmark reports `<0.3%` signed mass-flux mismatch in both healthy and stenosis cases, low Mach numbers, no counted safety interventions, `1.607×` stenosis peak speed, and `3.505×` relative peak shear.
-- The first viewport contains the working instrument, not a marketing splash screen.
-- The educator guide turns the interaction into a 12-minute prediction–experiment–explanation lesson.
-- Prior art and limitations are first-class documentation rather than buried disclaimers.
+- A rotatable vessel cutaway that carries a current-grid color map without claiming volumetric CFD or raw 3D values.
+- Four vessel stories whose geometry and model boundaries are documented.
+- A second live solver that makes every headline ratio a measured counterfactual rather than a canned score.
+- A full geometry-restoration interaction that reseeds and recomputes the final steady reference geometry instead of presenting a transition as treatment time.
+- Eight automated production/numerical tests, including lumen restoration without diameter overshoot and the worst-case reachable flow/geometry envelope.
+- A reproducible 10,000-step benchmark with `<0.3%` signed mass-flux mismatch in both healthy and stenosis cases, no counted safety interventions, `1.607×` stenosis peak speed, and a `3.505×` relative axial near-wall gradient proxy.
+- Primary-source receipts for the CDC burden figures, AHA lifestyle ranges, and FDA treatment mechanisms.
+- A rupture interaction whose payoff is a scientifically correct refusal.
+- A three-step mechanics check that turns the core claims into falsifiable learner predictions and labels its local score as non-validated.
+- A model card that separates computed mechanics from every interpretive layer.
 
 ## What we learned
 
-The most important insight is also the lesson VesselDelta teaches: one red “danger” layer is not enough. Fast flow, wall shear, vorticity, and circumferential pressure load are different quantities. A medically honest instrument becomes more interesting when it lets a learner separate them instead of flattening them into a fake risk score.
+The strongest visual is not necessarily the strongest claim. VesselDelta became better when the 3D view exposed its 2D source, the blood cells admitted they were tracers, lumen restoration stayed a steady geometry counterfactual, and the rupture button said no.
 
-We also learned that visible falsifiability is a design feature. Showing equations, runtime checks, a control field, and numerical interventions makes the experience more compelling—not less polished.
+We also learned that visible falsifiability can be part of the design. A learner can reset to the reference, inspect current numerical checks, disturb the geometry, watch ratios change, and read exactly which effects remain outside the model.
 
 ## What is next
 
 - classroom testing with pre/post concept questions;
-- educator-reviewed language and accessibility research;
-- a longer-period, validated pulsatile boundary implementation;
+- physician and educator review of language and pedagogy;
+- WebGL performance and fallback QA across representative devices;
 - grid-convergence tooling and improved wall-normal shear sampling;
-- optional WebGL compute for larger grids;
-- carefully scoped compliant-wall experiments;
-- never patient-specific or diagnostic use without a fundamentally different validation program.
+- a longer-period, validated pulsatile boundary implementation;
+- optional higher-resolution or WebGL compute experiments;
+- carefully scoped compliant-wall research;
+- never patient-specific, diagnostic, or treatment-guiding use without a fundamentally different model and validation program.
 
 ## Built with
 
-Codex, GPT-5.6, TypeScript, React, vinext, Canvas 2D, D2Q9 lattice-Boltzmann methods, Cloudflare runtime, Node test runner.
+Codex, GPT-5.6, TypeScript, React, vinext, Three.js, WebGL, Canvas 2D, D2Q9 lattice-Boltzmann methods, Cloudflare runtime, and the Node test runner.
 
 ## Required disclosures
 
-VesselDelta is a 2D Newtonian rigid-wall educational model. It is not clinical CFD, a medical device, diagnosis, advice, a plaque locator, or an aneurysm-rupture predictor. No physician review, classroom study, or clinical validation was completed before submission.
+VesselDelta computes a steady 2D Newtonian rigid-wall educational field with no physical time calibration. Its 3D cutaway, RBC-inspired tracers, story labels, amber narrowing, stent-like lumen-restoration animation, lifestyle evidence, medication mechanisms, and rupture lesson are illustrative layers with explicit boundaries.
 
-The solver and product code were written for this project; no third-party LBM source was copied. Numerical methods are cited in the README and METHODS document. License selection is pending owner authorization.
+It is not clinical CFD, a medical device, diagnosis, advice, a plaque locator, a patient-specific model, a treatment selector, a drug-response calculator, a stent-outcome predictor, or an aneurysm-rupture predictor. No physician review, educator study, or clinical validation was completed before submission.
+
+The solver and product code were written for this project; no third-party LBM source was copied. Numerical methods and public-health sources are cited in the README and METHODS document. License selection remains pending owner authorization.
 
 ## Official checklist
 
@@ -101,7 +126,7 @@ The solver and product code were written for this project; no third-party LBM so
 - [ ] Public/shared repository with approved license
 - [ ] README collaboration story
 - [ ] Codex session ID from `/feedback`
-- [ ] Public YouTube video, under three minutes, with real voiceover
+- [ ] Public YouTube video under three minutes with real voiceover
 - [ ] Education category selected
 - [ ] Individual submission
 - [ ] Final owner approval before Devpost submission

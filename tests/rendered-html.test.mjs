@@ -20,7 +20,12 @@ test("server-renders the VesselDelta instrument shell", async () => {
   assert.match(html, /<title>VesselDelta — Live blood-flow instrument<\/title>/i);
   assert.match(html, /Shape the vessel/);
   assert.match(html, /Live hemodynamics instrument/);
-  assert.match(html, /D2Q9 LBM/);
+  assert.match(html, /2D D2Q9 CFD/);
+  assert.match(html, /3D cutaway/);
+  assert.match(html, /Treatment mechanism theatre/);
+  assert.match(html, /119\.9 million/);
+  assert.match(html, /PREDICT BEFORE REVEAL/);
+  assert.match(html, /No physician review, educator study, or clinical validation was completed/);
   assert.match(html, /Illustrative/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton/);
 });

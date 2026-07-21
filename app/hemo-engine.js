@@ -89,6 +89,29 @@ export class HemoEngine {
     this.initialize();
   }
 
+  /**
+   * Opens the idealized stenosis toward the straight control geometry. This is
+   * a geometric counterfactual for teaching, not a device or outcome model.
+   */
+  setStenosisRestoration(fraction = 0) {
+    const restoration = clamp(fraction, 0, 1);
+    this.scenario = "stenosis-restoration";
+    const middle = this.nx * 0.52;
+    for (let x = 0; x < this.nx; x += 1) {
+      const dx = x - middle;
+      const remainingNarrowing = 0.40 * (1 - restoration);
+      const radius = this.baseRadius * (1 - remainingNarrowing * Math.exp(-(dx * dx) / (2 * 16 * 16)));
+      this.top[x] = this.center - radius;
+      this.bottom[x] = this.center + radius;
+    }
+    this.rebuildMask(false);
+    // The instrument compares steady counterfactuals and has no physical time
+    // calibration. Once the idealized restoration is complete, reseed the
+    // distribution on the final geometry instead of presenting a transient as
+    // a device-outcome timescale.
+    if (restoration >= 0.999) this.initialize();
+  }
+
   initialize() {
     this.f.fill(0);
     this.post.fill(0);

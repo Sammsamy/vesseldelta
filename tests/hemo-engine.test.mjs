@@ -19,7 +19,7 @@ test("straight channel recovers a stable Poiseuille-like profile", () => {
   assert.ok(engine.f.every(Number.isFinite), "distribution contains a non-finite value");
 });
 
-test("a stenosis creates a faster jet and stronger wall-shear estimate", () => {
+test("a stenosis creates a faster jet and stronger axial near-wall gradient proxy", () => {
   const healthy = run("healthy");
   const stenosis = run("stenosis");
   const baseline = healthy.getMetrics();
@@ -30,6 +30,28 @@ test("a stenosis creates a faster jet and stronger wall-shear estimate", () => {
   assert.ok(narrowed.maxVorticity > baseline.maxVorticity * 2.5);
   assert.ok(narrowed.mach < 0.1);
   assert.equal(narrowed.sanitizationCount, 0);
+});
+
+test("idealized lumen restoration reopens the stenosis without exceeding the control diameter", () => {
+  const reference = run("healthy");
+  const narrowed = run("stenosis");
+  const engine = new HemoEngine(160, 70, { preset: "stenosis" });
+  engine.setStenosisRestoration(1);
+  const after = engine.getMetrics().minDiameterRatio;
+  assert.ok(after > 0.99, `expected restoration to approach the reference lumen, received ${after}`);
+  assert.ok(after <= 1.001, `restored diameter exceeded control: ${after}`);
+  for (let step = 0; step < 520; step += 1) engine.step();
+  const restored = engine.getMetrics();
+  const referenceMetrics = reference.getMetrics();
+  const narrowedMetrics = narrowed.getMetrics();
+  assert.ok(engine.f.every(Number.isFinite), "all distributions remained finite after geometry restoration");
+  assert.equal(restored.sanitizationCount, 0);
+  assert.ok(restored.mach < 0.1, `restored Mach ${restored.mach}`);
+  assert.ok(restored.densitySpread < 0.02, `restored density spread ${restored.densitySpread}`);
+  assert.ok(restored.peakSpeed < narrowedMetrics.peakSpeed * 0.8, "restoration should reduce the modeled peak-speed jet");
+  assert.ok(restored.peakShear < narrowedMetrics.peakShear * 0.6, "restoration should reduce the near-wall gradient proxy");
+  assert.ok(restored.peakSpeed < referenceMetrics.peakSpeed * 1.08, "restored speed should remain near the reference");
+  assert.ok(restored.peakShear < referenceMetrics.peakShear * 1.15, "restored shear should remain near the reference");
 });
 
 test("aneurysm preset creates a saccular expansion without closing the lumen", () => {
@@ -66,4 +88,19 @@ test("constrained sculpting preserves a connected minimum gap and finite field",
   assert.ok(engine.f.every(Number.isFinite));
   assert.ok(engine.getMetrics().mach < 0.1);
   assert.equal(engine.getMetrics().sanitizationCount, 0);
+});
+
+test("the tightest reachable lumen remains inside the numerical gate at maximum exposed flow drive", () => {
+  const engine = new HemoEngine(160, 70, { meanVelocity: 0.020 });
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    engine.sculpt(82, engine.center + 1, "top");
+  }
+  for (let step = 0; step < 10_000; step += 1) engine.step();
+  const metrics = engine.getMetrics();
+  assert.ok(metrics.minDiameterRatio >= 0.539, `minimum diameter ratio ${metrics.minDiameterRatio}`);
+  assert.ok(metrics.mach < 0.1, `Mach ${metrics.mach}`);
+  assert.ok(metrics.densitySpread < 0.02, `density spread ${metrics.densitySpread}`);
+  assert.ok(metrics.fluxMismatch < 0.02, `flux mismatch ${metrics.fluxMismatch}`);
+  assert.equal(metrics.sanitizationCount, 0);
+  assert.ok(engine.f.every(Number.isFinite), "distribution contains a non-finite value");
 });
