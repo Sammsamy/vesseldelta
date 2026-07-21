@@ -6,10 +6,10 @@
 - **Tagline:** Shape the vessel. Watch the flow answer.
 - **Primary track:** Education
 - **Team:** Individual — Fuzlullah Syed
-- **Demo URL:** pending owner-authorized deployment
-- **Repository:** pending owner-authorized public licensed repository, or private repository shared with both required judging addresses
+- **Demo URL:** https://vesseldelta.ankigpt.workers.dev/
+- **Repository:** https://github.com/Sammsamy/vesseldelta (public, MIT)
 - **Video:** pending recording/upload
-- **Codex session ID:** pending retrieval from the primary build thread with `/status`
+- **Codex session ID:** pending verification from the primary build task with `/status`
 
 ## Short description
 
@@ -111,15 +111,15 @@ VesselDelta computes a steady 2D Newtonian rigid-wall educational field with no 
 
 It is not clinical CFD, a medical device, diagnosis, advice, a plaque locator, a patient-specific model, a treatment selector, a drug-response calculator, a stent-outcome predictor, or an aneurysm-rupture predictor. No physician review, educator study, or clinical validation was completed before submission.
 
-VesselDelta was created during the submission period; the current Git history begins July 21, 2026. The solver and product code were written for this project, and no third-party LBM source was copied. Numerical methods and public-health sources are cited in the README and METHODS document. Direct framework and dependency licenses are disclosed in `THIRD_PARTY_NOTICES.md`. VesselDelta's own license selection remains pending owner authorization.
+VesselDelta was created during the submission period; the current Git history begins July 21, 2026. The solver and product code were written for this project, and no third-party LBM source was copied. Numerical methods and public-health sources are cited in the README and METHODS document. Direct framework and dependency licenses are disclosed in `THIRD_PARTY_NOTICES.md`. VesselDelta is released under the MIT License.
 
 ## Official checklist
 
-- [ ] Public testable demo
-- [ ] Public repository with approved license, or private repository shared with `testing@devpost.com` and `build-week-event@openai.com`
+- [x] Public testable demo
+- [x] Public repository with approved MIT license
 - [x] Local cover and gallery images with bounded captions
 - [x] README collaboration story
-- [ ] Primary-thread Codex Session ID retrieved with `/status`
+- [ ] Primary-task Codex Session ID verified with `/status`
 - [ ] Public YouTube video under three minutes with real voiceover
 - [ ] Education category selected
 - [ ] Individual submission

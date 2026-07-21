@@ -2,6 +2,8 @@
 
 **Shape the vessel. Watch the flow answer.**
 
+**[Open the live instrument](https://vesseldelta.ankigpt.workers.dev/) · [Inspect the source](https://github.com/Sammsamy/vesseldelta)**
+
 VesselDelta is a zero-install vascular-mechanics learning instrument. Its default three-step guided lab asks a learner to predict before revealing the live model: locate a narrowing jet, separate pressure–radius tension from flow, and refuse a rupture conclusion the solver cannot support. Free exploration then exposes the rotatable three-dimensional cutaway, current computed two-dimensional grid, editable vessel wall, and two synchronized D2Q9 lattice-Boltzmann fields.
 
 The product is deliberately split into two layers:
@@ -201,7 +203,7 @@ There is no runtime model call. The project demonstrates meaningful Codex/GPT-5.
 
 VesselDelta was created during the Build Week submission period. The current Git history begins on July 21, 2026; the solver and product code are original to this project, and no third-party LBM implementation was copied.
 
-The required primary-thread Codex Session ID is pending owner retrieval with `/status`. The Devpost field is labeled `/feedback Codex Session ID`, but the current event FAQ directs entrants to retrieve the ID from the primary build thread with `/status`.
+The required primary-task Codex Session ID remains pending verification with `/status`. The Devpost field is labeled `/feedback Codex Session ID`.
 
 ## Run locally
 
@@ -224,7 +226,7 @@ npm run release:verify-local
 
 `release:verify-local` runs a high-confidence secret scan, lint, type/build/tests, dependency audit, the 10,000-step benchmark, and the release-evidence audit. `release:audit` distinguishes technical evidence from owner-controlled and external gates. `release:audit:strict` succeeds only when an exact-commit release receipt proves the license/repository route, deployed QA, public demo, public video, primary Session ID, and final owner approval.
 
-The official repository requirement can be met either by a public repository with the authorized project license or by a private repository shared with both `testing@devpost.com` and `build-week-event@openai.com`. VesselDelta currently has neither route because project-specific license and publication authorization remain pending.
+The reviewed source is published at [Sammsamy/vesseldelta](https://github.com/Sammsamy/vesseldelta) under the MIT License. The public, no-login build is deployed at [vesseldelta.ankigpt.workers.dev](https://vesseldelta.ankigpt.workers.dev/).
 
 ## Repository map
 
@@ -270,4 +272,4 @@ VALIDATION.md               reproducible benchmark and release evidence
 
 ## License and release status
 
-Local competition build. The owner has not yet selected VesselDelta's release route: either a public repository with an approved project license, or a private repository shared with both required judging addresses. No repository publication, deployment, or license claim should be inferred until that choice is explicitly authorized and recorded.
+VesselDelta is open source under the [MIT License](LICENSE). The public repository is [Sammsamy/vesseldelta](https://github.com/Sammsamy/vesseldelta), and the no-login competition build is available at [vesseldelta.ankigpt.workers.dev](https://vesseldelta.ankigpt.workers.dev/). Public release does not imply clinical validation: every scientific and medical limitation above still applies.

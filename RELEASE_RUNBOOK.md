@@ -16,16 +16,16 @@ Official deadline: **July 21, 2026 at 5:00 PM PDT / 7:00 PM CDT**. Keep the publ
 
 SNAP authorization does not transfer to VesselDelta. Before any release mutation, Fuzlullah must explicitly choose and authorize:
 
-- [ ] VesselDelta's project license;
-- [ ] public licensed repository, or private repository shared with both `testing@devpost.com` and `build-week-event@openai.com`;
-- [ ] repository creation and push;
-- [ ] Cloudflare deployment;
-- [ ] individual submission in the Education category.
+- [x] VesselDelta's MIT project license;
+- [x] public licensed repository;
+- [x] repository creation and push;
+- [x] Cloudflare deployment;
+- [x] individual Education entry authorization.
 
 ## 3. Publish the exact audited commit
 
-- [ ] Push the frozen commit to the authorized repository route.
-- [ ] Deploy that same commit to an unrestricted HTTPS URL with no login.
+- [x] Push the frozen commit to the authorized repository route.
+- [x] Deploy that same commit to an unrestricted HTTPS URL with no login.
 - [ ] Confirm the remote repository HEAD, deployment commit, and local audited commit are identical.
 - [ ] Record repository and demo URLs in `release-evidence.json`.
 
