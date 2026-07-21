@@ -10,6 +10,7 @@ const VesselTheatre3D = lazy(() =>
 type Layer = "velocity" | "vorticity" | "shear" | "wallLoad";
 type Scenario = "healthy" | "stenosis" | "aneurysm" | "hypertension";
 type StageView = "anatomy" | "slice";
+type ExperienceMode = "guided" | "explore";
 type ChallengeChoice = "throat" | "downstream" | "tension" | "jet" | "cannot" | "threshold";
 
 const PRESET_WARMUP_STEPS = 5_000;
@@ -415,6 +416,7 @@ export function VesselDeltaLab() {
   const [layer, setLayer] = useState<Layer>("velocity");
   const [scenario, setScenario] = useState<Scenario>("stenosis");
   const [stageView, setStageView] = useState<StageView>("anatomy");
+  const [experienceMode, setExperienceMode] = useState<ExperienceMode>("guided");
   const [pressure, setPressure] = useState(120);
   const [flowDrive, setFlowDrive] = useState(0.018);
   const [paused, setPaused] = useState(false);
@@ -624,6 +626,23 @@ export function VesselDeltaLab() {
   const activeChallenge = CHALLENGES[challengeIndex];
   const challengeScore = challengeResults.filter(Boolean).length;
 
+  const enterGuidedMode = () => {
+    if (experienceMode === "guided") return;
+    setExperienceMode("guided");
+    if (activeChallenge.id === "flow") {
+      applyScenario("stenosis");
+      setLayer("velocity");
+      setStageView(revealed ? "slice" : "anatomy");
+    } else if (activeChallenge.id === "pressure") {
+      applyScenario("hypertension");
+      setLayer("wallLoad");
+    } else {
+      applyScenario("aneurysm");
+      setLayer("wallLoad");
+    }
+    if (revealed) setRevealed(true);
+  };
+
   const revealChallenge = () => {
     if (!prediction || !activeChallenge) return;
     const correct = prediction === activeChallenge.correct;
@@ -665,6 +684,9 @@ export function VesselDeltaLab() {
     setChallengeComplete(false);
     setPrediction(null);
     setRevealed(false);
+    setExperienceMode("guided");
+    applyScenario("stenosis");
+    setLayer("velocity");
   };
 
   const canvasPosition = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -822,7 +844,10 @@ export function VesselDeltaLab() {
               aria-label={item === "healthy" ? "Reference channel" : item === "stenosis" ? "Idealized artery narrowing" : item === "aneurysm" ? "Idealized aortic-like bulge" : "Higher pressure state"}
               aria-selected={scenario === item && !(item === "healthy" && edited)}
               className={scenario === item && !(item === "healthy" && edited) ? "active" : ""}
-              onClick={() => applyScenario(item)}
+              onClick={() => {
+                setExperienceMode("explore");
+                applyScenario(item);
+              }}
             >
               <ScenarioIcon type={item} />
               <span>{item === "healthy" ? "Reference" : item === "stenosis" ? "Artery narrowing" : item === "aneurysm" ? "Aortic-like bulge" : "Higher pressure"}</span>
@@ -881,124 +906,154 @@ export function VesselDeltaLab() {
           </section>
 
           <aside className="control-rail">
-            <section className="rail-section layer-section">
-              <div className="rail-heading">
-                <span>FIELD LENS</span>
-                <small>Choose what the solver reveals</small>
-              </div>
-              <div className="layer-grid">
-                {layerOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={layer === option.id ? "active" : ""}
-                    aria-label={option.label}
-                    aria-pressed={layer === option.id}
-                    onClick={() => setLayer(option.id)}
-                  >
-                    <LayerIcon type={option.id} />
-                    <span>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
+            <div className="experience-switch" role="group" aria-label="Choose guided lab or free exploration">
+              <button type="button" className={experienceMode === "guided" ? "active" : ""} aria-pressed={experienceMode === "guided"} onClick={enterGuidedMode}>Guided lab</button>
+              <button type="button" className={experienceMode === "explore" ? "active" : ""} aria-pressed={experienceMode === "explore"} onClick={() => setExperienceMode("explore")}>Free explore</button>
+            </div>
 
-            <section className="rail-section comparison-section">
-              <div className="rail-heading">
-                <span>{scenario === "healthy" && edited ? "CUSTOM" : scenario === "stenosis" ? "IDEALIZED NARROWING" : scenario === "aneurysm" ? "AORTIC-LIKE BULGE" : scenario === "hypertension" ? "HIGHER PRESSURE" : "REFERENCE"} VS REFERENCE</span>
-                <small>same steady flow drive</small>
-              </div>
-              <div className="metric-grid">
-                <MetricCard eyebrow="Modeled peak speed" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} reference` : unavailableDetail} tone="cyan" />
-                <MetricCard eyebrow="Peak shear proxy" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} reference` : unavailableDetail} tone="rose" />
-                <MetricCard eyebrow="Modeled peak vorticity" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : unavailableDetail} tone="amber" />
-              </div>
-              {!comparisonsValid ? <p className="metric-gate-warning" role="status">{settling ? "Comparisons withheld · fields recomputing" : !fluxReady ? "Comparisons withheld · flux mismatch above 2% · wait or inspect Verify physics" : "Comparisons withheld · reset geometry or reduce flow drive · inspect Verify physics"}</p> : null}
-              {scenario === "stenosis" ? (
-                <button type="button" className="stent-action" onClick={deployIdealizedStent} disabled={stentStatus === "deploying"}>
-                  <span>{stentStatus === "deploying" ? "MORPHING GEOMETRY" : stentStatus === "restored" ? "REPLAY RESTORATION" : "IDEALIZED LUMEN RESTORATION"}</span>
-                  <strong>{stentStatus === "restored" ? "Modeled lumen widened; field recomputing" : "Apply a geometric counterfactual"}</strong>
-                  <small>Geometry counterfactual · not an outcome prediction</small>
-                </button>
-              ) : null}
-            </section>
+            {experienceMode === "guided" ? (
+              <section className="guided-rail" aria-label="Three-step live mechanics lab">
+                {challengeComplete ? (
+                  <>
+                    <div className="guided-progress complete"><span>LAB COMPLETE</span><i /></div>
+                    <span className="guided-eyebrow">THREE DISTINCTIONS · ONE LIVE MODEL</span>
+                    <h2>Jet ≠ wall tension<br />≠ rupture risk.</h2>
+                    <div className="guided-receipt">
+                      <article><span>01</span><p><strong>Narrowing</strong> raises the modeled throat jet and axial near-wall gradient proxy.</p></article>
+                      <article><span>02</span><p><strong>Pressure × radius</strong> changes a separate relative circumferential-tension index.</p></article>
+                      <article><span>03</span><p><strong>Rupture</strong> stays unanswered without tissue failure physics.</p></article>
+                    </div>
+                    <p className="guided-boundary">{challengeScore} / {CHALLENGES.length} correct in this local check. This is not a validated assessment or evidence of learning efficacy.</p>
+                    <div className="guided-footer-actions">
+                      <button type="button" onClick={resetChallenge}>Run again</button>
+                      <button type="button" className="guided-primary" onClick={() => setLimitsOpen(true)}>Open model receipt</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="guided-progress"><span>STEP {challengeIndex + 1} OF {CHALLENGES.length}</span><i style={{ width: `${((challengeIndex + (revealed ? 1 : 0.35)) / CHALLENGES.length) * 100}%` }} /></div>
+                    <span className="guided-eyebrow">PREDICT BEFORE REVEAL</span>
+                    <h2>{activeChallenge.question}</h2>
+                    <p className="guided-prompt">Commit to an answer. The control beside the edited vessel keeps the reveal falsifiable.</p>
+                    <div className="guided-options" role="group" aria-label={activeChallenge.question}>
+                      {activeChallenge.options.map((option, optionIndex) => (
+                        <button key={option.id} type="button" disabled={revealed} aria-pressed={prediction === option.id} className={prediction === option.id ? "selected" : ""} onClick={() => { setPrediction(option.id); setRevealed(false); }}>
+                          <span>{String.fromCharCode(65 + optionIndex)}</span>{option.label}
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" className="guided-reveal" disabled={!prediction || revealed} onClick={revealChallenge}>Reveal with the live model</button>
+                    {revealed ? (
+                      <div className={`guided-result ${prediction === activeChallenge.correct ? "correct" : "learn"}`} role="status" aria-live="polite">
+                        <span>{prediction === activeChallenge.correct ? "PREDICTION SUPPORTED" : "MODEL SHOWS A DIFFERENT DISTINCTION"}</span>
+                        <p>{activeChallenge.explanation}</p>
+                        {activeChallenge.id === "flow" ? (
+                          <div className="guided-live-readout">
+                            <small>{comparisonsValid ? "IN-GATE LIVE COMPARISON" : settling ? "FIELDS RECOMPUTING · RATIOS WITHHELD" : "WAITING FOR NUMERICAL GATE"}</small>
+                            <strong>{comparisonsValid ? `${formatRatio(speedRatio)} jet · ${formatRatio(shearRatio)} gradient` : "— · —"}</strong>
+                          </div>
+                        ) : activeChallenge.id === "pressure" ? (
+                          <div className="guided-live-readout">
+                            <small>SEPARATE PRESSURE–RADIUS RELATION</small>
+                            <strong>{loadRatio.toFixed(2)}× tension index · CFD drive unchanged</strong>
+                          </div>
+                        ) : (
+                          <button type="button" className="guided-boundary-button" onClick={() => setRuptureOpen(true)}>Inspect why rupture is not calculated</button>
+                        )}
+                        <button type="button" className="guided-next" disabled={activeChallenge.id === "flow" && !comparisonsValid} onClick={advanceChallenge}>{activeChallenge.id === "flow" && !comparisonsValid ? "Waiting for gated field" : challengeIndex === CHALLENGES.length - 1 ? "Finish lab" : "Next distinction"}</button>
+                      </div>
+                    ) : null}
+                    <button type="button" className="guided-skip" onClick={() => setExperienceMode("explore")}>Skip to free exploration</button>
+                  </>
+                )}
+              </section>
+            ) : (
+              <>
+                <section className="rail-section layer-section">
+                  <div className="rail-heading">
+                    <span>FIELD LENS</span>
+                    <small>Choose what the solver reveals</small>
+                  </div>
+                  <div className="layer-grid">
+                    {layerOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={layer === option.id ? "active" : ""}
+                        aria-label={option.label}
+                        aria-pressed={layer === option.id}
+                        onClick={() => setLayer(option.id)}
+                      >
+                        <LayerIcon type={option.id} />
+                        <span>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
 
-            <section className="rail-section controls-section">
-              <div className="rail-heading">
-                <span>TWO INDEPENDENT FORCES</span>
-                <small>Do not confuse pressure with shear</small>
-              </div>
-              <label className="control-row">
-                <span><b>Flow drive</b><small>sets inlet velocity · capped to verified sculpting envelope</small></span>
-                <output>{Math.round((flowDrive / 0.018) * 100)}%</output>
-                <input
-                  data-testid="flow-drive"
-                  type="range"
-                  min="0.012"
-                  max="0.020"
-                  step="0.001"
-                  value={flowDrive}
-                  onInput={(event) => setFlowDrive(Number(event.currentTarget.value))}
-                />
-              </label>
-              <label className="control-row pressure-control">
-                <span><b>Illustrative pressure factor</b><small>ratio only · not a measured BP · does not change CFD</small></span>
-                <output>{(pressure / 120).toFixed(2)}× baseline</output>
-                <input
-                  data-testid="pressure-factor"
-                  type="range"
-                  min="90"
-                  max="180"
-                  step="5"
-                  value={pressure}
-                  aria-label="Illustrative relative pressure factor"
-                  aria-valuetext={`${(pressure / 120).toFixed(2)} times model baseline; illustrative relative pressure, not millimeters of mercury`}
-                  onInput={(event) => setPressure(Number(event.currentTarget.value))}
-                />
-              </label>
-              <div className="load-readout">
-                <span>Relative wall-tension index</span>
-                <strong>{loadRatio.toFixed(2)}×</strong>
-                <small>Thin-cylinder relation · not rupture risk</small>
-              </div>
-            </section>
+                <section className="rail-section comparison-section">
+                  <div className="rail-heading">
+                    <span>{scenario === "healthy" && edited ? "CUSTOM" : scenario === "stenosis" ? "IDEALIZED NARROWING" : scenario === "aneurysm" ? "AORTIC-LIKE BULGE" : scenario === "hypertension" ? "HIGHER PRESSURE" : "REFERENCE"} VS REFERENCE</span>
+                    <small>same steady flow drive</small>
+                  </div>
+                  <div className="metric-grid">
+                    <MetricCard eyebrow="Modeled peak speed" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} reference` : unavailableDetail} tone="cyan" />
+                    <MetricCard eyebrow="Peak shear proxy" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} reference` : unavailableDetail} tone="rose" />
+                    <MetricCard eyebrow="Modeled peak vorticity" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : unavailableDetail} tone="amber" />
+                  </div>
+                  {!comparisonsValid ? <p className="metric-gate-warning" role="status">{settling ? "Comparisons withheld · fields recomputing" : !fluxReady ? "Comparisons withheld · flux mismatch above 2% · wait or inspect Verify physics" : "Comparisons withheld · reset geometry or reduce flow drive · inspect Verify physics"}</p> : null}
+                  {scenario === "stenosis" ? (
+                    <button type="button" className="stent-action" onClick={deployIdealizedStent} disabled={stentStatus === "deploying"}>
+                      <span>{stentStatus === "deploying" ? "MORPHING GEOMETRY" : stentStatus === "restored" ? "REPLAY RESTORATION" : "IDEALIZED LUMEN RESTORATION"}</span>
+                      <strong>{stentStatus === "restored" ? "Modeled lumen widened; field recomputing" : "Apply a geometric counterfactual"}</strong>
+                      <small>Geometry counterfactual · not an outcome prediction</small>
+                    </button>
+                  ) : null}
+                </section>
+
+                <section className="rail-section controls-section">
+                  <div className="rail-heading">
+                    <span>TWO INDEPENDENT FORCES</span>
+                    <small>Do not confuse pressure with shear</small>
+                  </div>
+                  <label className="control-row">
+                    <span><b>Flow drive</b><small>sets inlet velocity · capped to verified sculpting envelope</small></span>
+                    <output>{Math.round((flowDrive / 0.018) * 100)}%</output>
+                    <input
+                      data-testid="flow-drive"
+                      type="range"
+                      min="0.012"
+                      max="0.020"
+                      step="0.001"
+                      value={flowDrive}
+                      onInput={(event) => setFlowDrive(Number(event.currentTarget.value))}
+                    />
+                  </label>
+                  <label className="control-row pressure-control">
+                    <span><b>Illustrative pressure factor</b><small>ratio only · not a measured BP · does not change CFD</small></span>
+                    <output>{(pressure / 120).toFixed(2)}× baseline</output>
+                    <input
+                      data-testid="pressure-factor"
+                      type="range"
+                      min="90"
+                      max="180"
+                      step="5"
+                      value={pressure}
+                      aria-label="Illustrative relative pressure factor"
+                      aria-valuetext={`${(pressure / 120).toFixed(2)} times model baseline; illustrative relative pressure, not millimeters of mercury`}
+                      onInput={(event) => setPressure(Number(event.currentTarget.value))}
+                    />
+                  </label>
+                  <div className="load-readout">
+                    <span>Relative wall-tension index</span>
+                    <strong>{loadRatio.toFixed(2)}×</strong>
+                    <small>Thin-cylinder relation · not rupture risk</small>
+                  </div>
+                </section>
+              </>
+            )}
           </aside>
         </div>
-
-        <section className="prediction-card" aria-label="Three-step mechanics check">
-          {challengeComplete ? (
-            <>
-              <div>
-                <span className="prediction-number">MECHANICS CHECK COMPLETE</span>
-                <h2>{challengeScore} / {CHALLENGES.length} model distinctions correct</h2>
-              </div>
-              <div className="prediction-actions">
-                <button type="button" onClick={resetChallenge}>Try the check again</button>
-                <button type="button" className="reveal-button" onClick={() => setRuptureOpen(true)}>Inspect the model boundary</button>
-              </div>
-              <div className="prediction-result correct"><strong>Local result only.</strong><span>This checks three concepts in the current session; it is not evidence of learning efficacy or clinical competence.</span></div>
-            </>
-          ) : (
-            <>
-              <div>
-                <span className="prediction-number">PREDICT BEFORE REVEAL · {challengeIndex + 1} / {CHALLENGES.length}</span>
-                <h2>{activeChallenge.question}</h2>
-              </div>
-              <div className="prediction-actions">
-                {activeChallenge.options.map((option) => (
-                  <button key={option.id} type="button" disabled={revealed} className={prediction === option.id ? "selected" : ""} onClick={() => { setPrediction(option.id); setRevealed(false); }}>{option.label}</button>
-                ))}
-                <button type="button" className="reveal-button" disabled={!prediction || revealed} onClick={revealChallenge}>Reveal with the model</button>
-              </div>
-              {revealed ? (
-                <div className={`prediction-result ${prediction === activeChallenge.correct ? "correct" : "learn"}`}>
-                  <span><strong>{prediction === activeChallenge.correct ? "Prediction supported." : "The model shows a different distinction."}</strong>{activeChallenge.explanation}</span>
-                  <button type="button" className="prediction-next" onClick={advanceChallenge}>{challengeIndex === CHALLENGES.length - 1 ? "See result" : "Next challenge"}</button>
-                </div>
-              ) : null}
-            </>
-          )}
-        </section>
       </section>
 
       <section className="lesson-section">
@@ -1032,6 +1087,16 @@ export function VesselDeltaLab() {
         </button>
       </section>
 
+      <details className="clinical-context" id="clinical-context">
+        <summary>
+          <span className="context-index">OPTIONAL CLINICAL CONTEXT</span>
+          <span className="context-summary-copy">
+            <span className="context-title">Connect the mechanics<br /><em>without diluting the model.</em></span>
+            <span className="context-deck">Open source-linked hypertension burden, sustained lifestyle evidence, and medication pathways. None of these interpretive layers changes the CFD or predicts a person’s response.</span>
+          </span>
+          <strong><span className="context-open-label">Open context</span><span className="context-close-label">Close context</span><i>+</i></strong>
+        </summary>
+        <div className="clinical-context-content">
       <section className="burden-section" aria-labelledby="burden-title">
         <div className="burden-intro">
           <p className="kicker"><span /> Evidence, not alarm</p>
@@ -1100,6 +1165,8 @@ export function VesselDeltaLab() {
         </div>
         <p className="review-disclosure"><strong>Review status</strong> No physician review, educator study, or clinical validation was completed. Educational mechanics only; not medical advice, diagnosis, prediction, or treatment guidance.</p>
       </section>
+        </div>
+      </details>
 
       <section className="proof-section" id="proof">
         <div className="proof-heading">

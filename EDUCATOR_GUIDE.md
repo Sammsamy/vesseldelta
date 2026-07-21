@@ -19,7 +19,7 @@ By the end, a learner should be able to:
 ## Before class
 
 - Open VesselDelta in a current desktop browser.
-- Confirm the default **Idealized artery narrowing** starts in **3D interpretation**; select **Reference channel** whenever you want the matched baseline alone.
+- Confirm the default **Guided lab** opens on **Idealized artery narrowing** in **3D interpretation**. Use **Free explore** for manual field lenses, controls, and lumen restoration.
 - Rotate the cutaway, then switch to **Computed slice** and confirm the current computed grid is visible.
 - Confirm the healthy edited/control tiles settle near `1.00×`.
 - Open **Verify physics** and check that the field is finite and inside the low-Mach gate.
@@ -29,7 +29,7 @@ By the end, a learner should be able to:
 
 ### 0:00–2:00 — establish the model receipt
 
-Begin in **3D interpretation**. Ask:
+Begin in the default **Guided lab** and **3D interpretation**. Ask:
 
 > “Is this a 3D fluid simulation?”
 
@@ -47,7 +47,7 @@ Ask:
 
 > “If I narrow this pathway, where will speed peak: at the narrowest throat or in the downstream turning field?”
 
-Students commit with the prediction buttons. Reveal **Idealized artery narrowing** in the computed slice.
+Students commit in guided step 1. **Reveal with the live model** changes the scene to the computed narrowing slice. Point out that the ratios remain blank while the fields recompute and appear only after the numerical gate passes.
 
 Ask students to locate:
 
@@ -60,7 +60,7 @@ The intended observation is a faster throat jet. Explain that this is a generic 
 
 ### 4:30–6:30 — change the field lens
 
-Switch in order:
+Choose **Free explore**, then switch in order:
 
 1. **Modeled velocity** — magnitude of local flow.
 2. **Vorticity** — signed local turning, not a blanket claim of turbulence.
@@ -97,7 +97,7 @@ Incorrect sentence:
 
 ### 8:00–10:30 — separate shear from pressure load
 
-Choose **Idealized aortic-like bulge**, then **Wall tension**. Increase the illustrative pressure factor without changing flow drive.
+Return to **Guided lab** for step 2, commit to an answer, and reveal the higher-pressure story. Then choose **Free explore** if you want to vary the illustrative pressure factor directly.
 
 Write:
 
@@ -117,7 +117,7 @@ Choose **Higher pressure state** and point out that the story initializes a `160
 
 ### 10:30–11:30 — ask the rupture question
 
-Open **Can this model predict rupture?**
+Use guided step 3, then open **Can this model predict rupture?**
 
 Have students name the missing inputs before revealing the list: measured wall thickness, material strength/failure law, longitudinal growth and asymmetric anatomy, and fluid–structure coupling.
 
@@ -127,7 +127,7 @@ State:
 
 ### 11:30–13:30 — evidence without fake biology
 
-Scroll to the lifestyle cards. The AHA source lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); the interface scopes them as approximate averages for adults without hypertension. Ask why the displayed ranges should not be arithmetically summed into a personal forecast. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
+Open the optional **Clinical context** drawer, then inspect the lifestyle cards. The AHA source lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); the interface scopes them as approximate averages for adults without hypertension. Ask why the displayed ranges should not be arithmetically summed into a personal forecast. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
 
 Open one medication mechanism. Emphasize that the animation explains a pathway while the CFD remains unchanged. Ask which statement is more defensible:
 
@@ -144,9 +144,9 @@ Sources:
 - [FDA Hypertension](https://www.fda.gov/consumers/health-education-resources/hypertension)
 - [FDA Statin Drug Safety Communication](https://www.fda.gov/drugs/drug-safety-and-availability/fda-requests-removal-strongest-warning-against-using-cholesterol-lowering-statins-during-pregnancy)
 
-### 13:30–14:30 — complete the mechanics check
+### 13:30–14:30 — consolidate the guided receipt
 
-Use the built-in **Three-step mechanics check**. Each reveal changes the live instrument so learners can inspect the claim they just made:
+Return to the completed **Guided lab** receipt. Each reveal changed the live instrument so learners could inspect the claim they made:
 
 1. the fastest flow in the narrowing appears at the throat;
 2. the higher-pressure story raises only the separate wall-tension index, not the CFD jet;

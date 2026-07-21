@@ -2,23 +2,22 @@
 
 **Shape the vessel. Watch the flow answer.**
 
-VesselDelta is a zero-install vascular-mechanics learning instrument. A learner can rotate a three-dimensional cutaway, open the current computed two-dimensional grid, reshape an idealized vessel wall, and watch two synchronized D2Q9 lattice-Boltzmann solvers recompute the edited vessel and an untouched control.
+VesselDelta is a zero-install vascular-mechanics learning instrument. Its default three-step guided lab asks a learner to predict before revealing the live model: locate a narrowing jet, separate pressure–radius tension from flow, and refuse a rupture conclusion the solver cannot support. Free exploration then exposes the rotatable three-dimensional cutaway, current computed two-dimensional grid, editable vessel wall, and two synchronized D2Q9 lattice-Boltzmann fields.
 
 The product is deliberately split into two layers:
 
 1. **Computed mechanics:** a `160 × 70` two-dimensional, rigid-wall D2Q9 flow field; edited-versus-reference velocity and vorticity; a normalized axial near-wall gradient proxy; and a separate thin-cylinder relative circumferential wall-tension index.
-2. **Interpretive teaching:** an axisymmetric 3D cutaway, RBC-inspired massless tracers, four vessel stories, population-level hypertension evidence, medication-mechanism animations, an idealized lumen-restoration animation, and a lesson about why rupture cannot be calculated here.
+2. **Interpretive teaching:** an axisymmetric 3D cutaway, RBC-inspired massless tracers, four vessel stories, an idealized lumen-restoration animation, and a lesson about why rupture cannot be calculated here. Population-level hypertension evidence and medication-mechanism animations remain available in a deliberately optional **Clinical context** drawer.
 
 The interpretive layer never becomes hidden solver input. There is no 3D CFD, blood-cell model, pharmacokinetic model, treatment-response model, plaque-growth model, or rupture model.
 
 ## Five-second demo
 
-1. Choose **Idealized artery narrowing** in the default **3D interpretation** view.
-2. Rotate the cutaway and watch the RBC-inspired tracers cross the narrowed segment.
-3. Switch to **Computed slice** to see and sculpt the current 2D grid that drives the presentation.
-4. Compare the edited vessel with the independently running reference channel.
-5. Return to 3D and choose **Idealized lumen restoration** to reopen the model geometry and recompute the field.
-6. Finish the **Three-step mechanics check**: predict the throat jet, separate pressure from flow, and refuse a rupture claim the model cannot support.
+1. Start in the default **Guided lab** and predict where a narrowing creates the fastest modeled flow.
+2. Reveal the answer: the app changes the live scenario and keeps comparison ratios blank until both fields pass the numerical gate.
+3. Watch numerically gated jet and axial near-wall gradient ratios appear against the independently running reference.
+4. Continue to a pressure–radius lesson that leaves CFD flow drive unchanged.
+5. Finish by refusing a rupture claim the rigid-wall model cannot answer, then open **Free explore** to sculpt geometry or replay idealized lumen restoration.
 
 No sign-in, upload, server simulation, or paid runtime API is required.
 
@@ -31,10 +30,10 @@ No sign-in, upload, server simulation, or paid runtime API is required.
 | RBC-inspired forms | Advances 92 massless visual tracers from sampled `uₓ,uᵧ`, with a display-only time multiplier, while keeping them on the computed plane | Physical time, red-cell mass, hematocrit, deformation, aggregation, collisions, viscosity effects, or cell-resolved rheology |
 | Amber narrowing overlay | Makes the modeled stenosis geometry readable | Histology, plaque composition, plaque growth, calcification, or vulnerability |
 | Idealized lumen restoration | Smoothly reopens the mathematical stenosis to the reference geometry and reseeds the final steady field | A stent simulation, device mechanics, physical deployment time, strut–flow interaction, embolic risk, restenosis, procedural success, or a treatment recommendation |
-| Hypertension evidence | Shows current population burden and sustained lifestyle ranges from CDC/AHA sources | A personal forecast, diagnosis, immediate meal-to-flow response, or additive benefit estimate |
-| Medication theatre | Explains high-level pathways for ACE inhibitors/ARBs, calcium-channel blockers, thiazide-type diuretics, and statins | Dose, efficacy, adverse effects, interactions, PK/PD, prescribing, or an individual response |
+| Optional clinical context | Keeps population burden and sustained lifestyle ranges from CDC/AHA sources behind an explicit context drawer | A personal forecast, diagnosis, immediate meal-to-flow response, or additive benefit estimate |
+| Optional medication theatre | Explains high-level pathways for ACE inhibitors/ARBs, calcium-channel blockers, thiazide-type diuretics, and statins without competing with the core guided lab | Dose, efficacy, adverse effects, interactions, PK/PD, prescribing, or an individual response |
 | Rupture boundary | Names the missing inputs and explicitly refuses to animate or predict rupture | Wall failure stress, threshold, probability, timing, or clinical risk |
-| Three-step mechanics check | Runs three local predict-before-reveal questions and changes the live scenario or lens after each answer | Learning efficacy, clinical competence, diagnosis, or a validated assessment |
+| Default guided mechanics lab | Runs three local predict-before-reveal questions inside the hero, changes the live scenario or lens after each answer, and finishes with a compact model receipt | Learning efficacy, clinical competence, diagnosis, or a validated assessment |
 
 ## Four honest scenarios
 

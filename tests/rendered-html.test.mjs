@@ -22,7 +22,10 @@ test("server-renders the VesselDelta instrument shell", async () => {
   assert.match(html, /Live hemodynamics instrument/);
   assert.match(html, /2D D2Q9 CFD/);
   assert.match(html, /3D cutaway/);
+  assert.match(html, /Guided lab/);
+  assert.match(html, /Free explore/);
   assert.match(html, /Treatment mechanism theatre/);
+  assert.match(html, /OPTIONAL CLINICAL CONTEXT/);
   assert.match(html, /119\.9 million/);
   assert.match(html, /PREDICT BEFORE REVEAL/);
   assert.match(html, /No physician review, educator study, or clinical validation was completed/);

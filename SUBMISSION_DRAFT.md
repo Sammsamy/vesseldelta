@@ -13,7 +13,7 @@
 
 ## Short description
 
-VesselDelta turns vascular mechanics into a hands-on experiment. Rotate an illustrative 3D vessel cutaway, open and sculpt the current 2D D2Q9 grid beneath it, compare the edited field with a second live reference, and learn why modeled velocity, an axial near-wall gradient proxy, and relative pressure–radius wall tension are different—and why none of them can predict rupture here.
+VesselDelta turns vascular mechanics into a guided live experiment. Predict a narrowing jet, watch two D2Q9 fields withhold their comparison until they pass a numerical gate, separate flow from pressure–radius wall tension, and finish by refusing a rupture conclusion the model cannot support. Free exploration then exposes the rotatable 3D cutaway and editable computed 2D slice.
 
 ## Inspiration
 
@@ -30,10 +30,10 @@ The learner can:
 - explore four clearly bounded stories: **Reference channel**, **Idealized artery narrowing**, **Idealized aortic-like bulge**, and **Higher pressure state**;
 - view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate thin-cylinder pressure–radius wall-tension lens;
 - compare peak speed, the axial near-wall gradient proxy, and vorticity against a simultaneously running reference field;
-- complete a three-step predict-before-reveal check whose answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
+- complete the default three-step guided lab whose predict-before-reveal answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
 - run **idealized lumen restoration**, a stent-like geometry counterfactual that reaches the reference lumen and recomputes a reseeded steady field;
 - inspect current FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits;
-- explore source-linked hypertension burden, sustained lifestyle ranges, and medication mechanism animations;
+- optionally open **Clinical context** for source-linked hypertension burden, sustained lifestyle ranges, and medication mechanism animations without letting those layers compete with the mechanics lab;
 - ask **Can this model predict rupture?** and see exactly why this rigid-wall model cannot answer.
 
 The 3D scene is transparent about its construction. A cell-by-cell 8-bit color map of the current grid appears inside a surface-of-revolution cutaway; signed vorticity stays signed, while the shear and wall-tension lenses are derived display maps. The surrounding rings display axial peak magnitude, not volumetric flow. RBC-shaped objects are massless visual tracers on that plane, driven by sampled `uₓ,uᵧ` with a display-only time scale. Amber marks modeled narrowing geometry, not plaque biology.
@@ -76,7 +76,7 @@ The medication theatre explains high-level ACE inhibitor/ARB, calcium-channel bl
 
 ### Prior art changed the product
 
-Our first claim was that browser blood-flow/WSS tools barely existed. Research disproved it: analytic browser hemodynamics and browser LBM demos already exist. We changed the contribution to the complete learning loop: direct constrained vessel sculpting, continuously recomputed CFD, a synchronized control, an inspectable 2D-to-3D translation, two mechanically distinct force lessons, treatment and lifestyle interpretation with hard boundaries, prediction-before-reveal, and visible numerical verification.
+Our first claim was that browser blood-flow/WSS tools barely existed. Research disproved it: analytic browser hemodynamics and browser LBM demos already exist. We changed the contribution to the complete learning loop: a default guided prediction journey, direct constrained vessel sculpting, continuously recomputed CFD, a synchronized control, an inspectable 2D-to-3D translation, two mechanically distinct force lessons, an explicit refusal at the rupture boundary, and visible numerical verification. Treatment and lifestyle interpretation remain optional context rather than separate headline products.
 
 ## Accomplishments
 
@@ -88,7 +88,7 @@ Our first claim was that browser blood-flow/WSS tools barely existed. Research d
 - A reproducible 10,000-step benchmark with `<0.4%` absolute mass-flux mismatch in both healthy and stenosis cases, no counted safety interventions, `1.608×` stenosis peak speed, and a `3.492×` relative axial near-wall gradient proxy.
 - Primary-source receipts for the CDC burden figures, AHA lifestyle ranges, and FDA treatment mechanisms.
 - A rupture interaction whose payoff is a scientifically correct refusal.
-- A three-step mechanics check that turns the core claims into falsifiable learner predictions and labels its local score as non-validated.
+- A default three-step mechanics lab that turns the core claims into falsifiable learner predictions, drives the live scene, and labels its local score as non-validated.
 - A model card that separates computed mechanics from every interpretive layer.
 
 ## What we learned

@@ -663,7 +663,7 @@ export function VesselTheatre3D({
       {webglError ? (
         <div className="theatre-fallback">
           <strong>3D unavailable in this browser.</strong>
-          <span>The validated computed slice remains fully available.</span>
+          <span>The computed slice remains fully available.</span>
           <button type="button" onClick={onShowSlice}>Open computed slice</button>
         </div>
       ) : null}

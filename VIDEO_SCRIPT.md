@@ -1,98 +1,90 @@
 # VesselDelta video script
 
-Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export below three minutes. The working instrument should fill the frame; face camera is optional for the opening and close.
+Target: **2 minutes 40 seconds**. Use a real voiceover and keep the final export below three minutes. The working instrument should fill the frame; face camera is optional for the opening and close.
 
 ## Recording setup
 
 - Browser at 1280×720 or 1440×900.
-- Start on **Idealized artery narrowing**, **3D interpretation**, **Modeled velocity**, default flow drive, and default illustrative pressure factor.
-- Wait until the status changes from **FIELD RECOMPUTING** to **FIELD EVOLVING** and all three comparison cards appear before starting the take. The audited local warm-up took about seven seconds; deployment timing may differ.
+- Start on the default **Guided lab**, step 1, **Idealized artery narrowing**, and **3D interpretation**.
+- Wait until the status changes from **FIELD RECOMPUTING** to **FIELD EVOLVING** before starting. The first reveal deliberately recomputes the preset and withholds its ratios; record that state, then make one clean jump cut after the gate passes. The audited local warm-up took about seven seconds; deployment timing may differ.
 - Confirm the 3D cutaway rotates smoothly before recording.
-- Keep **Computed slice**, **Idealized lumen restoration**, **Verify physics**, and **Can this model predict rupture?** in a practiced click path.
+- Practice the three guided reveals, **Free explore**, **Idealized lumen restoration**, **Verify physics**, and the optional **Clinical context** drawer.
 - Record a clean take with natural pauses, then trim dead time.
 - Do not claim 3D CFD, simulated blood cells, real plaque, treatment efficacy, immediate diet effects, rupture prediction, patient specificity, or “the first browser blood-flow simulator.”
 
 ## Script and actions
 
-### 0:00–0:08 — open on the instrument
+### 0:00–0:09 — open on the guided instrument
 
-**Action:** Begin on the rotating reference cutaway. Click **Idealized artery narrowing**.
-
-**Say:**
-
-> I’m Fuzlullah, a third-year medical student. This is VesselDelta. Change a vessel, and live flow answers.
-
-### 0:08–0:25 — make the 2D-to-3D contract visible
-
-**Action:** Rotate the narrowing once. Point to the model receipt. Click **Computed slice**.
+**Action:** Begin on the rotating narrowing cutaway with **Guided lab · Step 1 of 3** visible.
 
 **Say:**
 
-> It looks three-dimensional, but the flow solve is two-dimensional. The cutaway revolves its wall shape, and the plane color-encodes the D2Q9 grid. The red-cell shapes are massless visual tracers, not simulated blood cells.
+> I’m Fuzlullah, a third-year medical student. This is VesselDelta: a guided lab where the model has to earn every reveal.
 
-### 0:25–0:43 — prove the live counterfactual
+### 0:09–0:25 — make the 2D-to-3D contract visible
 
-**Action:** Let the stenosis field develop. Point to the ghost outline and the three comparison tiles. Switch from **Modeled velocity** to **Shear proxy**, then briefly to **Vorticity**.
-
-**Say:**
-
-> A second untouched vessel runs beside every edit. Narrowing creates a faster throat jet, a larger axial near-wall gradient proxy, and altered downstream turning. These are computed ratios, not clinical wall shear.
-
-### 0:43–0:57 — show the restoration boundary
-
-**Action:** Return to **3D interpretation**. Click **Idealized lumen restoration** and let the lumen reach the reference shape.
+**Action:** Rotate the narrowing once and point to the model receipt.
 
 **Say:**
 
-> Restoration is a steady geometry counterfactual. It reopens the lumen, reseeds the final field, and recomputes. It is not device deployment, treatment advice, or a patient-outcome prediction.
+> It looks three-dimensional, but the flow solve is two-dimensional. The cutaway revolves its wall shape, and the plane color-encodes the current D2Q9 grid. The red-cell shapes are massless visual tracers, not simulated blood cells.
 
-### 0:57–1:17 — separate pressure from shear
+### 0:25–0:54 — predict, gate, then reveal
 
-**Action:** Choose **Idealized aortic-like bulge**, select **Wall tension**, and raise the illustrative pressure factor. Then choose **Higher pressure state**.
-
-**Say:**
-
-> Flow shear acts along the wall; pressure-driven tension acts around it. This separate relation shows how pressure and radius change a relative tension index without changing CFD speed. It is dimensionless, not millimeters of mercury, tissue stress, or rupture risk.
-
-### 1:17–1:29 — turn refusal into a feature
-
-**Action:** Click **Can this model predict rupture?** and hold on the missing-input cards.
+**Action:** Choose **At the narrowest throat**, then **Reveal with the live model**. Show **FIELD RECOMPUTING** and the blank ratio receipt for a beat. Jump cut only after **FIELD EVOLVING** and the live ratios appear in the guide.
 
 **Say:**
 
-> So can this vessel rupture? This model cannot answer. It has no measured wall thickness, tissue strength, growth history, or fluid–structure coupling. A dramatic tear here would be fiction.
+> First, I have to predict where narrowing makes flow fastest. A second untouched vessel runs beside the edited field. While either field recomputes or misses the two-percent flux gate, VesselDelta refuses to show comparison numbers. Only then does it reveal the throat jet and larger axial near-wall gradient proxy. Those are model ratios, not clinical wall shear.
 
-### 1:29–1:45 — connect to the real burden
+### 0:54–1:14 — separate pressure from flow
 
-**Action:** Scroll through the CDC burden cards and the three AHA lifestyle cards.
-
-**Say:**
-
-> The CDC reports a 119.9-million-adult estimate from 2017 through early 2020. The lifestyle cards show AHA ranges for adults without hypertension. Do not sum them into a personal forecast; they never feed the flow model.
-
-### 1:45–1:59 — explain medicine without prescribing
-
-**Action:** Open the ACE inhibitor/ARB mechanism, then click **Thiazide** and **Statin**.
+**Action:** Choose **Next distinction**, select **Only the wall-tension index rises**, and reveal step 2. Point to the `1.33×` relative index and the words `CFD drive unchanged`.
 
 **Say:**
 
-> Medication theatre explains pathways without pretending to prescribe. These FDA-sourced animations contain no dose, efficacy forecast, or personal response, and they do not alter the CFD. No physician review or clinical validation was completed.
+> Next, pressure. VesselDelta keeps flow drive separate from a thin-cylinder pressure-times-radius relation. The illustrative higher-pressure state raises a relative circumferential-tension index while CFD drive stays unchanged. It is dimensionless, not millimeters of mercury, tissue stress, or patient risk.
 
-### 1:59–2:18 — show the proof
+### 1:14–1:34 — make refusal the payoff
+
+**Action:** Advance to step 3, select **No—wall-failure inputs are absent**, reveal, and open **Inspect why rupture is not calculated**.
+
+**Say:**
+
+> Finally: can the brightest region predict rupture? No. This rigid-wall solver has no measured wall thickness, tissue strength, growth history, or fluid–structure failure law. A dramatic tear would be fiction, so the product refuses.
+
+### 1:34–1:52 — show free exploration without overclaiming treatment
+
+**Action:** Return to the instrument, choose **Free explore**, switch to the narrowing story, and run **Idealized lumen restoration**.
+
+**Say:**
+
+> The guided path is the lesson; free exploration is the instrument. This lumen-restoration animation changes only idealized geometry, reseeds the final steady field, and recomputes. It is not a stent deployment, treatment recommendation, or outcome forecast.
+
+### 1:52–2:12 — inspect the proof
 
 **Action:** Open **Verify physics**. Point to FPS, Mach number, profile error, density, finite-field card, and `160 × 70 × 2`.
 
 **Say:**
 
-> The model is inspectable. Judges can see both local fields, the low-Mach and flux gates, density stability, a fitted Poiseuille-profile check, and every numerical safety intervention. The repository includes nine automated tests and a reproducible ten-thousand-step benchmark.
+> The proof is inspectable: two local fields, low-Mach and flux gates, density stability, a fitted Poiseuille-profile check, and every numerical intervention. The repository adds nine automated tests and a reproducible ten-thousand-step benchmark.
 
-### 2:18–2:42 — Codex decisions and close
+### 2:12–2:24 — keep clinical context optional
 
-**Action:** Return to the rotating cutaway and title.
+**Action:** Close verification, scroll to **Optional clinical context**, open it briefly, then close it.
 
 **Say:**
 
-> Codex with GPT-5.6 helped implement and stress-test the D2Q9 boundaries, caught an unstable extreme-flow control, and forced the 3D view to reveal its 2D source. It also narrowed every medical claim. That workflow is preserved in the repository and primary session. VesselDelta: shape the vessel, and watch the flow answer.
+> CDC burden, AHA lifestyle ranges, and FDA-sourced medication pathways stay in an optional context drawer. They never feed the solver or become a personal forecast. No physician review, educator study, or clinical validation was completed.
+
+### 2:24–2:40 — Codex decisions and close
+
+**Action:** Return to the completed guided receipt and the rotating cutaway.
+
+**Say:**
+
+> Codex with GPT-5.6 implemented and stress-tested the D2Q9 boundaries, caught an unstable flow control, exposed the 2D source inside the 3D view, and narrowed every medical claim. VesselDelta: predict, inspect, and know when the model cannot answer.
 
 ## Natural delivery notes
 
