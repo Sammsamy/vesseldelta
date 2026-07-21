@@ -49,7 +49,7 @@ SNAP authorization does not transfer to VesselDelta. Before any release mutation
 
 - [ ] Fuzlullah rehearses `VIDEO_SCRIPT.md` once with a timer.
 - [ ] Record the working public build with real spoken audio.
-- [ ] Export below three minutes; target 2:45–2:52 for upload safety.
+- [ ] Export below three minutes; target 2:35–2:45 for upload safety.
 - [ ] Confirm the audio says what was built, how Codex was used, and specifically what GPT-5.6 changed.
 - [ ] Upload publicly to YouTube and verify it in a signed-out window.
 - [ ] Record the URL and measured duration in `release-evidence.json`.

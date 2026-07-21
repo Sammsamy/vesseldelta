@@ -136,7 +136,8 @@ function imageMetadata(relativePath) {
   ) {
     const width = data.readUInt32BE(16);
     const height = data.readUInt32BE(20);
-    return { extension, format: "png", width, height, bytes: data.length };
+    const complete = data.length >= 12 && data.subarray(data.length - 12).toString("hex") === "0000000049454e44ae426082";
+    return { extension, format: "png", width, height, bytes: data.length, complete };
   }
 
   if (data.length >= 4 && data[0] === 0xff && data[1] === 0xd8) {
@@ -168,13 +169,14 @@ function imageMetadata(relativePath) {
           width: data.readUInt16BE(offset + 5),
           height: data.readUInt16BE(offset + 3),
           bytes: data.length,
+          complete: data[data.length - 2] === 0xff && data[data.length - 1] === 0xd9,
         };
       }
       offset += segmentLength;
     }
   }
 
-  return { extension, format: "unknown", width: 0, height: 0, bytes: data.length };
+  return { extension, format: "unknown", width: 0, height: 0, bytes: data.length, complete: false };
 }
 
 function extensionMatchesFormat(metadata) {
@@ -283,31 +285,49 @@ if (receipt.error) {
   const imageRecords = assetNames.map((name) => ({
     name,
     ...imageMetadata(`submission-assets/${name}`),
+    digest: sha256(join(assetDirectory, name)),
   }));
-  const invalidImages = imageRecords.filter((image) => !extensionMatchesFormat(image) || image.width <= 0 || image.height <= 0);
+  const invalidImages = imageRecords.filter((image) => !extensionMatchesFormat(image) || !image.complete || image.width <= 0 || image.height <= 0);
   const cover = imageRecords.find((image) => image.name === "00-cover-1280x720.jpg");
   const thumbnail = imageRecords.find((image) => image.name === "thumbnail-1200x800.jpg");
-  const galleryCount = imageRecords.filter((image) => image.name !== "thumbnail-1200x800.jpg").length;
+  const galleryImages = imageRecords.filter((image) => image.name !== "thumbnail-1200x800.jpg");
+  const galleryCount = galleryImages.length;
+  const requiredGalleryNames = [
+    "00-cover-1280x720.jpg",
+    "01-guided-gated-reveal-1280x720.jpg",
+    "02-pressure-separation-1280x720.jpg",
+    "03-rupture-boundary.jpg",
+    "04-live-verification-1280x720.jpg",
+  ];
+  const galleryNamesReady = galleryImages.map((image) => image.name).sort().join("\n") === requiredGalleryNames.join("\n");
+  const imageDigestsAreDistinct = new Set(imageRecords.map((image) => image.digest)).size === imageRecords.length;
   const head = git(["rev-parse", "HEAD"]);
   const origin = git(["remote", "get-url", "origin"]);
   const worktree = git(["status", "--porcelain"]);
   const evidence = receipt.value;
   const checks = [];
 
-  const galleryReady = galleryCount >= 5
+  const galleryReady = galleryCount === 5
+    && galleryNamesReady
+    && imageDigestsAreDistinct
     && invalidImages.length === 0
+    && galleryImages.every((image) => image.format === "jpeg" && image.width === 1280 && image.height === 720)
     && cover?.format === "jpeg" && cover.width === 1280 && cover.height === 720
     && thumbnail?.format === "jpeg" && thumbnail.width === 1200 && thumbnail.height === 800;
   const galleryProblems = [];
-  if (galleryCount < 5) galleryProblems.push(`${galleryCount}/5 gallery images`);
-  if (!cover || cover.width !== 1280 || cover.height !== 720 || cover.format !== "jpeg") galleryProblems.push("cover must be a real 1280x720 JPEG");
+  if (galleryCount !== 5) galleryProblems.push(`${galleryCount}/5 gallery images (exactly five required)`);
+  if (!galleryNamesReady) galleryProblems.push(`gallery filenames must exactly match: ${requiredGalleryNames.join(", ")}`);
+  if (!imageDigestsAreDistinct) galleryProblems.push("gallery and thumbnail files must have distinct image content");
+  const invalidGalleryImages = galleryImages.filter((image) => image.format !== "jpeg" || image.width !== 1280 || image.height !== 720);
+  if (invalidGalleryImages.length) galleryProblems.push(`every gallery image must be a real 1280x720 JPEG: ${invalidGalleryImages.map((image) => image.name).join(", ")}`);
+  if (!cover || cover.width !== 1280 || cover.height !== 720 || cover.format !== "jpeg") galleryProblems.push("00-cover-1280x720.jpg must be a real 1280x720 JPEG");
   if (!thumbnail || thumbnail.width !== 1200 || thumbnail.height !== 800 || thumbnail.format !== "jpeg") galleryProblems.push("thumbnail must be a real 1200x800 JPEG");
   if (invalidImages.length) galleryProblems.push(`invalid or extension-mismatched: ${invalidImages.map((image) => image.name).join(", ")}`);
   checks.push(check(
     "gallery",
     "local",
     galleryReady ? STATUS.PASS : STATUS.FAIL,
-    galleryReady ? `${imageRecords.length} valid images; required cover and thumbnail dimensions verified` : galleryProblems.join("; "),
+    galleryReady ? "exactly five 1280x720 gallery JPEGs plus one 1200x800 thumbnail verified" : galleryProblems.join("; "),
   ));
 
   checks.push(check(

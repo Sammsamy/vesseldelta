@@ -24,7 +24,7 @@ Run on July 21, 2026 from the current working state:
 |---|---:|---:|
 | Grid | 160 × 70 | 160 × 70 |
 | Solver steps | 10,000 | 10,000 |
-| Solver throughput in Node | 1,910 steps/s | 1,996 steps/s |
+| Solver throughput in Node | 1,900 steps/s | 2,057 steps/s |
 | Fitted profile-shape L2 error | 0.0709% | 0.0519% |
 | Maximum Mach number | 0.04695 | 0.07548 |
 | Density spread | 0.00262 | 0.00484 |
@@ -86,7 +86,9 @@ The current suite establishes that:
 
 The 3D cutaway is an axisymmetric surface-of-revolution interpretation of the 2D wall profile. It contains a cell-by-cell 8-bit color rendering of the current grid, with derived display maps for shear and wall tension; its ring-projected surface colors and depth are illustrative. There is no 3D solver to validate.
 
-The live FPS card reports the main instrument animation loop, not independent GPU timing for the Three.js renderer. On July 21, 2026, the current local 3D build was exercised in the Codex in-app Chromium browser at its default `1280 × 720` viewport and at a temporary `390 × 844` responsive viewport. Reference, narrowing, full lumen restoration, higher-pressure separation, 3D/2D switching, and the rupture-boundary modal were inspected. The normal display cadence held `60 FPS` and approximately `239–241` twin solver steps/s during those checks. After the accelerated warm-up was added, a fresh default narrowing load exposed gate-passing comparison values after approximately `7.2 seconds` on that same local browser; the post-warm-up card showed `FIELD EVOLVING`, and the browser error log remained empty. This is one-browser local evidence—not a cross-device GPU or load-time guarantee.
+The live FPS card reports the main instrument animation loop, not independent GPU timing for the Three.js renderer. On July 21, 2026, the current local 3D build was exercised in the Codex in-app Chromium browser at its default `1280 × 720` viewport and at a temporary `390 × 844` responsive viewport. Reference, narrowing, full lumen restoration, higher-pressure separation, 3D/2D switching, and the rupture-boundary modal were inspected. The normal display cadence held `60 FPS` and approximately `239–241` twin solver steps/s during those checks. After the accelerated warm-up was added, a fresh default narrowing load exposed gate-passing comparison values after approximately `7.2 seconds` on that same local browser; the post-warm-up card showed `FIELD EVOLVING`.
+
+After the default guided-lab refactor at source commit `4278a39`, the browser journey was repeated end to end at `1280 × 720`: the narrowing answer forced ratios to remain blank until the field returned inside the gate, the pressure step left CFD drive unchanged, the rupture step opened the explicit refusal, the `3 / 3` receipt rendered, and Guided Lab re-entry restored the appropriate scenario. The optional Clinical context disclosure opened correctly, and its thiazide tab changed the visible mechanism copy without affecting the solver. At `390 × 844`, the rendered page collapsed to a single-column instrument with a horizontally scrollable story selector, stacked theatre and guided rail, readable body copy, and enlarged primary controls. The final local console log contained no warning or error entries. This is one-browser local evidence—not a cross-device GPU, assistive-technology, deployment, or load-time guarantee.
 
 The production build now code-splits the 3D renderer. In the audited build, the instrument-shell chunk was approximately `52 KiB` raw (`15.6 KiB` gzip) and the lazily loaded Three.js theatre chunk was approximately `532 KiB` raw (`135 KiB` gzip). Vite still reports its conservative `>500 kB` raw-chunk warning for that theatre chunk. Release QA should still record:
 
