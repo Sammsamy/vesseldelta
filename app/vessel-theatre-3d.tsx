@@ -439,7 +439,7 @@ export function VesselTheatre3D({
     let frame = 0;
     let animation = 0;
     let visible = true;
-    const idleYawOrigin = rotationRef.current.targetY;
+    let userYaw = rotationRef.current.targetY;
 
     const onPointerDown = (event: PointerEvent) => {
       dragging = true;
@@ -451,7 +451,8 @@ export function VesselTheatre3D({
       if (!dragging) return;
       const dx = event.clientX - previousX;
       const dy = event.clientY - previousY;
-      rotationRef.current.targetY += dx * 0.006;
+      userYaw += dx * 0.006;
+      rotationRef.current.targetY = userYaw;
       rotationRef.current.targetX = clamp(rotationRef.current.targetX + dy * 0.004, -0.55, 0.42);
       previousX = event.clientX;
       previousY = event.clientY;
@@ -461,11 +462,12 @@ export function VesselTheatre3D({
       if (mount.hasPointerCapture(event.pointerId)) mount.releasePointerCapture(event.pointerId);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft") rotationRef.current.targetY -= 0.14;
-      else if (event.key === "ArrowRight") rotationRef.current.targetY += 0.14;
+      if (event.key === "ArrowLeft") userYaw -= 0.14;
+      else if (event.key === "ArrowRight") userYaw += 0.14;
       else if (event.key === "ArrowUp") rotationRef.current.targetX = clamp(rotationRef.current.targetX - 0.1, -0.55, 0.42);
       else if (event.key === "ArrowDown") rotationRef.current.targetX = clamp(rotationRef.current.targetX + 0.1, -0.55, 0.42);
       else return;
+      rotationRef.current.targetY = userYaw;
       event.preventDefault();
     };
 
@@ -541,7 +543,7 @@ export function VesselTheatre3D({
       }
 
       const target = rotationRef.current;
-      if (!dragging && !reducedMotion) target.targetY = idleYawOrigin + Math.sin(time * 0.00016) * 0.085;
+      target.targetY = userYaw + (!dragging && !reducedMotion ? Math.sin(time * 0.00016) * 0.085 : 0);
       target.x += (target.targetX - target.x) * 0.08;
       target.y += (target.targetY - target.y) * 0.08;
       vessel.rotation.x = target.x;

@@ -28,13 +28,13 @@ The learner can:
 - rotate an axisymmetric 3D cutaway derived from the current vessel profile;
 - switch to the current computed `160 × 70` slice and sculpt either wall;
 - explore four clearly bounded stories: **Reference channel**, **Idealized artery narrowing**, **Idealized aortic-like bulge**, and **Higher pressure state**;
-- view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate constant-thickness pressure–radius wall-tension lens;
+- view modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a separate thin-cylinder pressure–radius wall-tension lens;
 - compare peak speed, the axial near-wall gradient proxy, and vorticity against a simultaneously running reference field;
 - complete a three-step predict-before-reveal check whose answers drive the live model: throat jet, pressure-versus-flow separation, and the rupture boundary;
 - run **idealized lumen restoration**, a stent-like geometry counterfactual that reaches the reference lumen and recomputes a reseeded steady field;
 - inspect current FPS, Mach number, density stability, a fitted Poiseuille-profile shape check, safety-intervention count, equations, and model limits;
 - explore source-linked hypertension burden, sustained lifestyle ranges, and medication mechanism animations;
-- ask **Can this vessel rupture?** and see exactly why this rigid-wall model cannot answer.
+- ask **Can this model predict rupture?** and see exactly why this rigid-wall model cannot answer.
 
 The 3D scene is transparent about its construction. A cell-by-cell 8-bit color map of the current grid appears inside a surface-of-revolution cutaway; signed vorticity stays signed, while the shear and wall-tension lenses are derived display maps. The surrounding rings display axial peak magnitude, not volumetric flow. RBC-shaped objects are massless visual tracers on that plane, driven by sampled `uₓ,uᵧ` with a display-only time scale. Amber marks modeled narrowing geometry, not plaque biology.
 
@@ -44,7 +44,7 @@ The instrument runs locally with no login, upload, server simulation, or paid ru
 
 The numerical core is an original JavaScript D2Q9 BGK lattice-Boltzmann solver with pull streaming, halfway bounce-back rigid walls, a parabolic Zou–He velocity inlet, and fixed-density Zou–He outlet. The editable lumen uses constrained smooth wall profiles. Pointer edits rebuild the solid mask while newly opened fluid nodes warm-start from neighboring equilibrium values.
 
-Two `160 × 70` fields run under the same flow drive: the edited vessel and the untouched reference. Canvas rendering displays the current velocity and signed vorticity arrays, advects passive tracers, and computes a normalized axial near-wall grid-gradient proxy. It is not a slope-aware clinical WSS measurement. The wall-tension lens is deliberately separate and, with thickness fixed, uses the dimensionless relation `(P/P0) × (r/r0)`.
+Two `160 × 70` fields run under the same flow drive: the edited vessel and the untouched reference. Canvas rendering displays the current velocity and signed vorticity arrays, advects passive tracers, and computes a normalized axial near-wall grid-gradient proxy. It is not a slope-aware clinical WSS measurement. The wall-tension lens is deliberately separate and uses the thin-cylinder dimensionless relation `(P/P0) × (r/r0)`; it is not hoop stress.
 
 Three.js turns the current wall profiles into a rotatable axisymmetric cutaway. It color-encodes the current grid cell by cell in a planar texture and repeats an axial peak-magnitude display around each ring for interpretation. Shear and wall-tension lenses are labeled derived display maps. There is no hidden 3D solve. Ninety-two RBC-inspired forms advance from the current 2D `uₓ,uᵧ` field with a visual time multiplier but contribute no mass or momentum.
 
@@ -68,7 +68,7 @@ A stent-like ring animation is compelling, but a ring mesh is not a medical-devi
 
 ### Teaching hypertension without turning food into instant vessel physics
 
-The current AHA ranges for DASH-style eating, sodium reduction, and aerobic exercise describe sustained, variable effects. The interface scopes them as approximate averages for adults without hypertension, marks them as overlapping and non-additive, and never feeds them into the CFD. [AHA source](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
+The current AHA ranges for DASH-style eating, sodium reduction, and aerobic exercise describe sustained, variable effects. The interface scopes them as approximate averages for adults without hypertension, warns against arithmetically summing the displayed ranges into a personal forecast, and never feeds them into the CFD. [AHA source](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
 
 ### Explaining treatment without prescribing
 
@@ -84,8 +84,8 @@ Our first claim was that browser blood-flow/WSS tools barely existed. Research d
 - Four vessel stories whose geometry and model boundaries are documented.
 - A second live solver that makes every headline ratio a measured counterfactual rather than a canned score.
 - A full geometry-restoration interaction that reseeds and recomputes the final steady reference geometry instead of presenting a transition as treatment time.
-- Eight automated production/numerical tests, including lumen restoration without diameter overshoot and the worst-case reachable flow/geometry envelope.
-- A reproducible 10,000-step benchmark with `<0.3%` signed mass-flux mismatch in both healthy and stenosis cases, no counted safety interventions, `1.607×` stenosis peak speed, and a `3.505×` relative axial near-wall gradient proxy.
+- Nine automated production/numerical tests, including comparison-ratio withholding, lumen restoration without diameter overshoot, and the worst-case reachable flow/geometry envelope.
+- A reproducible 10,000-step benchmark with `<0.4%` absolute mass-flux mismatch in both healthy and stenosis cases, no counted safety interventions, `1.608×` stenosis peak speed, and a `3.492×` relative axial near-wall gradient proxy.
 - Primary-source receipts for the CDC burden figures, AHA lifestyle ranges, and FDA treatment mechanisms.
 - A rupture interaction whose payoff is a scientifically correct refusal.
 - A three-step mechanics check that turns the core claims into falsifiable learner predictions and labels its local score as non-validated.

@@ -19,7 +19,7 @@ for (const preset of presets) {
     mach: Number(metrics.mach.toFixed(5)),
     densitySpread: Number(metrics.densitySpread.toFixed(5)),
     meanDensityDriftPercent: Number((metrics.massDrift * 100).toFixed(4)),
-    signedMassFluxMismatchPercent: Number((metrics.fluxMismatch * 100).toFixed(4)),
+    massFluxMismatchPercent: Number((metrics.fluxMismatch * 100).toFixed(4)),
     peakSpeed: Number(metrics.peakSpeed.toFixed(6)),
     peakWallShearEstimate: Number(metrics.peakShear.toFixed(8)),
     peakWallShearToPlanarReference: Number(metrics.peakShearRatio.toFixed(4)),
@@ -48,7 +48,7 @@ for (const preset of presets) {
   assert.ok(result.mach < 0.10, `${preset} Mach ${result.mach}`);
   assert.ok(result.densitySpread < 0.02, `${preset} density spread ${result.densitySpread}`);
   assert.ok(Math.abs(result.meanDensityDriftPercent) < 1, `${preset} density drift ${result.meanDensityDriftPercent}%`);
-  assert.ok(result.signedMassFluxMismatchPercent < 2, `${preset} flux mismatch ${result.signedMassFluxMismatchPercent}%`);
+  assert.ok(result.massFluxMismatchPercent < 2, `${preset} flux mismatch ${result.massFluxMismatchPercent}%`);
   assert.equal(result.countedSafetyInterventions, 0, `${preset} safety interventions`);
 }
 assert.ok(results.healthy.profileShapeL2Percent < 3, `healthy profile error ${results.healthy.profileShapeL2Percent}%`);

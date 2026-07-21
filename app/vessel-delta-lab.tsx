@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { HemoEngine, wallLoadRatio } from "./hemo-engine.js";
+import { comparisonMetricsReady, HemoEngine, wallLoadRatio } from "./hemo-engine.js";
 
 const VesselTheatre3D = lazy(() =>
   import("./vessel-theatre-3d").then((module) => ({ default: module.VesselTheatre3D })),
@@ -11,6 +11,10 @@ type Layer = "velocity" | "vorticity" | "shear" | "wallLoad";
 type Scenario = "healthy" | "stenosis" | "aneurysm" | "hypertension";
 type StageView = "anatomy" | "slice";
 type ChallengeChoice = "throat" | "downstream" | "tension" | "jet" | "cannot" | "threshold";
+
+const PRESET_WARMUP_STEPS = 5_000;
+const EDIT_WARMUP_STEPS = 1_200;
+const WARMUP_STEPS_PER_FRAME = 12;
 
 const CHALLENGES: Array<{
   id: "flow" | "pressure" | "rupture";
@@ -37,7 +41,7 @@ const CHALLENGES: Array<{
       { id: "jet", label: "The CFD jet automatically accelerates" },
     ],
     correct: "tension",
-    explanation: "Pressure belongs to a separate constant-thickness P × r teaching relation. It is not silently converted into faster CFD flow.",
+    explanation: "Pressure belongs to a separate thin-cylinder P × r wall-tension relation. It is not silently converted into faster CFD flow.",
   },
   {
     id: "rupture",
@@ -393,6 +397,7 @@ function MetricCard({
 
 export function VesselDeltaLab() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const instrumentPanelRef = useRef<HTMLElement | null>(null);
   const engineRef = useRef<HemoEngine | null>(null);
   const controlRef = useRef<HemoEngine | null>(null);
   const fieldCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -403,7 +408,9 @@ export function VesselDeltaLab() {
   const stageViewRef = useRef<StageView>("anatomy");
   const pressureRef = useRef(120);
   const pausedRef = useRef(false);
+  const instrumentVisibleRef = useRef(true);
   const settlingUntilStepRef = useRef(0);
+  const flowEffectReadyRef = useRef(false);
   const stentTimerRef = useRef<number | null>(null);
   const [layer, setLayer] = useState<Layer>("velocity");
   const [scenario, setScenario] = useState<Scenario>("stenosis");
@@ -453,17 +460,33 @@ export function VesselDeltaLab() {
     let frameCounter = 0;
     let lastReport = lastTime;
     let simulatedSteps = 0;
-    settlingUntilStepRef.current = engine.stepCount + 110;
+    settlingUntilStepRef.current = engine.stepCount + PRESET_WARMUP_STEPS;
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      instrumentVisibleRef.current = entry.isIntersecting;
+    }, { rootMargin: "160px" });
+    if (instrumentPanelRef.current) visibilityObserver.observe(instrumentPanelRef.current);
 
     const animate = (now: number) => {
       const active = engineRef.current;
       const baseline = controlRef.current;
       const canvas = canvasRef.current;
       if (!active || !baseline || !canvas || !fieldCanvasRef.current) return;
+      if (!instrumentVisibleRef.current) {
+        lastTime = now;
+        lastReport = now;
+        frameCounter = 0;
+        simulatedSteps = 0;
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
       frameCounter += 1;
       if (!pausedRef.current) {
         const dt = now - lastTime;
-        const steps = dt > 28 ? 1 : 2;
+        const warming = active.stepCount < settlingUntilStepRef.current;
+        const steps = warming
+          ? Math.min(settlingUntilStepRef.current - active.stepCount, dt > 28 ? 6 : WARMUP_STEPS_PER_FRAME)
+          : dt > 28 ? 1 : 2;
         active.step(steps);
         baseline.step(steps);
         simulatedSteps += steps * 2;
@@ -508,6 +531,7 @@ export function VesselDeltaLab() {
     animationRef.current = requestAnimationFrame(animate);
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      visibilityObserver.disconnect();
     };
   }, []);
 
@@ -534,6 +558,12 @@ export function VesselDeltaLab() {
   useEffect(() => {
     engineRef.current?.setFlowDrive(flowDrive);
     controlRef.current?.setFlowDrive(flowDrive);
+    if (!flowEffectReadyRef.current) {
+      flowEffectReadyRef.current = true;
+      return;
+    }
+    settlingUntilStepRef.current = (engineRef.current?.stepCount ?? 0) + EDIT_WARMUP_STEPS;
+    setSettling(true);
   }, [flowDrive]);
 
   const applyScenario = (next: Scenario) => {
@@ -555,7 +585,7 @@ export function VesselDeltaLab() {
     particlesRef.current.forEach((particle) => {
       particle.life = 0;
     });
-    settlingUntilStepRef.current = (active?.stepCount ?? 0) + 110;
+    settlingUntilStepRef.current = (active?.stepCount ?? 0) + PRESET_WARMUP_STEPS;
     setSettling(true);
   };
 
@@ -581,7 +611,7 @@ export function VesselDeltaLab() {
       const eased = 1 - Math.pow(1 - progress, 3);
       active.setStenosisRestoration(eased);
       setStentProgress(progress);
-      settlingUntilStepRef.current = active.stepCount + 100;
+      settlingUntilStepRef.current = active.stepCount + (progress >= 1 ? PRESET_WARMUP_STEPS : EDIT_WARMUP_STEPS);
       setSettling(true);
       if (progress >= 1) {
         if (stentTimerRef.current !== null) window.clearInterval(stentTimerRef.current);
@@ -657,7 +687,7 @@ export function VesselDeltaLab() {
     dragSideRef.current = position.y < center ? "top" : "bottom";
     event.currentTarget.setPointerCapture(event.pointerId);
     engine.sculpt(position.x, position.y, dragSideRef.current);
-    settlingUntilStepRef.current = engine.stepCount + 100;
+    settlingUntilStepRef.current = engine.stepCount + EDIT_WARMUP_STEPS;
     setEdited(true);
     setRevealed(false);
     setSettling(true);
@@ -669,7 +699,7 @@ export function VesselDeltaLab() {
     if (!position) return;
     const engine = engineRef.current;
     engine?.sculpt(position.x, position.y, dragSideRef.current);
-    settlingUntilStepRef.current = (engine?.stepCount ?? 0) + 100;
+    settlingUntilStepRef.current = (engine?.stepCount ?? 0) + EDIT_WARMUP_STEPS;
     setEdited(true);
   };
 
@@ -682,23 +712,30 @@ export function VesselDeltaLab() {
   const vorticityRatio = controlMetrics.maxVorticity > 0 ? metrics.maxVorticity / controlMetrics.maxVorticity : 1;
   const { maxRadiusRatio, profileError, benchmarkReady } = liveChecks;
   const loadRatio = wallLoadRatio(pressure, maxRadiusRatio);
-  const stable = metrics.mach < 0.1 && metrics.densitySpread < 0.03;
-  const comparisonsValid = stable
-    && metrics.sanitizationCount === 0
-    && controlMetrics.mach < 0.1
-    && controlMetrics.densitySpread < 0.03
-    && controlMetrics.sanitizationCount === 0
+  const stable = metrics.mach < 0.1 && metrics.densitySpread < 0.02;
+  const fluxReady = metrics.fluxMismatch < 0.02 && controlMetrics.fluxMismatch < 0.02;
+  const comparisonsValid = comparisonMetricsReady(metrics, controlMetrics, settling)
     && Number.isFinite(speedRatio)
     && Number.isFinite(shearRatio)
     && Number.isFinite(vorticityRatio);
+  const unavailableDetail = settling
+    ? "field recomputing"
+    : !fluxReady
+      ? "flux mismatch above 2%"
+      : "outside numerical gate";
+  const fieldStatus = settling ? "FIELD RECOMPUTING" : !fluxReady ? "FLUX GATE >2%" : "FIELD EVOLVING";
 
   const interpretation =
     !comparisonsValid
-      ? "Comparison values are withheld because the current field is outside the instrument’s numerical gate. Reset the geometry or reduce flow drive, then inspect Verify physics."
+      ? settling
+        ? "Comparison values are withheld while both fields recompute and inlet/outlet flux mismatch returns below the 2% validation gate."
+        : !fluxReady
+          ? "Comparison values are withheld because at least one field remains above the 2% inlet/outlet flux-mismatch gate. Wait for the field; if the warning persists, reset the geometry or reduce flow drive."
+          : "Comparison values are withheld because the current field is outside the instrument’s numerical gate. Reset the geometry or reduce flow drive, then inspect Verify physics."
       : scenario === "hypertension"
       ? `The higher illustrative pressure state raises the relative wall-tension index to ${loadRatio.toFixed(2)}× baseline while the CFD flow drive remains independently controlled.`
       : scenario === "aneurysm" || maxRadiusRatio > 1.18
-      ? `The widened wall raises this model’s constant-thickness wall-tension index to ${loadRatio.toFixed(2)}× baseline. The fluid layer separately shows slower cavity flow and altered shear.`
+      ? `The widened wall raises this model’s relative circumferential wall-tension index to ${loadRatio.toFixed(2)}× baseline. The fluid layer separately shows slower cavity flow and an altered axial near-wall gradient proxy.`
       : metrics.minDiameterRatio < 0.88
         ? `In this idealized 2D field, the narrowed lumen produces a ${speedRatio.toFixed(2)}× modeled peak-speed jet and ${shearRatio.toFixed(2)}× axial near-wall gradient proxy relative to the matched reference. Downstream turning is different from the throat gradient.`
         : "A smooth straight channel produces a near-parabolic velocity profile. Sculpt the wall to create a counterfactual under the same boundary conditions.";
@@ -794,10 +831,10 @@ export function VesselDeltaLab() {
         </div>
 
         <div className="instrument-grid">
-          <section className="canvas-panel" aria-label="Interactive blood flow experiment">
+          <section ref={instrumentPanelRef} className="canvas-panel" aria-label="Interactive blood flow experiment">
             <div className="canvas-status">
               <span className="live-pill"><i /> {paused ? "PAUSED" : "LIVE SOLVE"}</span>
-              <span className={settling ? "settling" : "evolving"}>{settling ? "FIELD RECOMPUTING" : "FIELD EVOLVING"}</span>
+              <span className={settling || !fluxReady ? "settling" : "evolving"}>{fieldStatus}</span>
               <span className="runtime-pill">{fps || "—"} FPS · {stepsPerSecond || "—"} TWIN STEPS/S</span>
             </div>
             <div className="stage-switcher" role="group" aria-label="Choose anatomical or computed view">
@@ -872,11 +909,11 @@ export function VesselDeltaLab() {
                 <small>same steady flow drive</small>
               </div>
               <div className="metric-grid">
-                <MetricCard eyebrow="Modeled peak speed" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} reference` : "outside numerical gate"} tone="cyan" />
-                <MetricCard eyebrow="Peak shear proxy" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} reference` : "outside numerical gate"} tone="rose" />
-                <MetricCard eyebrow="Modeled peak vorticity" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : "outside numerical gate"} tone="amber" />
+                <MetricCard eyebrow="Modeled peak speed" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} reference` : unavailableDetail} tone="cyan" />
+                <MetricCard eyebrow="Peak shear proxy" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} reference` : unavailableDetail} tone="rose" />
+                <MetricCard eyebrow="Modeled peak vorticity" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : unavailableDetail} tone="amber" />
               </div>
-              {!comparisonsValid ? <p className="metric-gate-warning" role="status">Comparisons withheld · reset geometry or reduce flow drive · inspect Verify physics</p> : null}
+              {!comparisonsValid ? <p className="metric-gate-warning" role="status">{settling ? "Comparisons withheld · fields recomputing" : !fluxReady ? "Comparisons withheld · flux mismatch above 2% · wait or inspect Verify physics" : "Comparisons withheld · reset geometry or reduce flow drive · inspect Verify physics"}</p> : null}
               {scenario === "stenosis" ? (
                 <button type="button" className="stent-action" onClick={deployIdealizedStent} disabled={stentStatus === "deploying"}>
                   <span>{stentStatus === "deploying" ? "MORPHING GEOMETRY" : stentStatus === "restored" ? "REPLAY RESTORATION" : "IDEALIZED LUMEN RESTORATION"}</span>
@@ -922,7 +959,7 @@ export function VesselDeltaLab() {
               <div className="load-readout">
                 <span>Relative wall-tension index</span>
                 <strong>{loadRatio.toFixed(2)}×</strong>
-                <small>Assumes constant thickness · not rupture risk</small>
+                <small>Thin-cylinder relation · not rupture risk</small>
               </div>
             </section>
           </aside>
@@ -968,7 +1005,7 @@ export function VesselDeltaLab() {
         <div className="lesson-intro">
           <p className="kicker"><span /> The lesson hiding in plain sight</p>
           <h2>Blood loads a vessel through<br /><em>two distinct mechanics.</em></h2>
-          <p>Flow produces tangential wall shear, while pressure acts normally on the wall and is related to circumferential wall tension. VesselDelta keeps the live shear field separate from a constant-thickness pressure–radius tension relation.</p>
+          <p>Flow produces tangential wall shear, while pressure acts normally on the wall and is related to circumferential wall tension. VesselDelta keeps the live axial near-wall gradient proxy separate from a thin-cylinder pressure–radius tension relation.</p>
         </div>
         <div className="force-cards">
           <article className="force-card shear-force">
@@ -984,14 +1021,14 @@ export function VesselDeltaLab() {
             <div className="force-visual pressure-visual"><i /><i /><i /><i /></div>
             <p className="force-kicker">NORMAL PRESSURE → CIRCUMFERENTIAL</p>
             <h3>Wall tension relation</h3>
-            <p>A separate constant-thickness relation shows why both higher pressure and a larger radius raise the relative circumferential-tension index. This is not a rupture-probability model.</p>
+            <p>A separate thin-cylinder relation shows why both higher pressure and a larger radius raise the relative circumferential wall-tension index. This is not a rupture-probability model.</p>
             <code>relative tension index = P/P₀ · r/r₀</code>
           </article>
         </div>
         <button type="button" className="rupture-boundary" onClick={() => setRuptureOpen(true)}>
           <span>MODEL BOUNDARY</span>
-          <strong>Can this vessel rupture?</strong>
-          <small>Reveal why rigid-wall CFD cannot answer that question</small>
+          <strong>Can this model predict rupture?</strong>
+          <small>Open the missing-physics receipt</small>
         </button>
       </section>
 
@@ -1013,7 +1050,7 @@ export function VesselDeltaLab() {
         <div className="evidence-heading">
           <p className="kicker"><span /> What sustained habits can change</p>
           <h2 id="evidence-title">Show the evidence.<br /><em>Do not fake the biology.</em></h2>
-          <p>These are approximate average systolic blood-pressure reductions summarized by the AHA for adults without hypertension. Effects can differ with baseline pressure; they are not individual forecasts, they overlap, and they must not be added together.</p>
+          <p>These are approximate average systolic blood-pressure reductions summarized by the AHA for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary.</p>
         </div>
         <div className="evidence-cards">
           <article>
@@ -1027,7 +1064,7 @@ export function VesselDeltaLab() {
           </article>
         </div>
         <div className="evidence-footer">
-          <span>Ranges overlap · response varies · not additive</span>
+          <span>Ranges overlap · combined effects vary · not a personal forecast</span>
           <a href="https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf" target="_blank" rel="noreferrer">AHA 2025 BP-lowering ranges ↗</a>
         </div>
       </section>
@@ -1112,10 +1149,10 @@ export function VesselDeltaLab() {
             <p className="modal-kicker">MODEL CARD · READ BEFORE INTERPRETING</p>
             <h2 id="limits-title">Illustrative mechanics,<br />not personal risk.</h2>
             <div className="limits-grid">
-              <article><span>INCLUDES</span><p>2D D2Q9 BGK lattice-Boltzmann flow, rigid no-slip walls, smooth constrained geometry, a normalized axial near-wall gradient proxy, and a separate pressure–radius relative wall-tension relation that assumes constant thickness. The 3D cutaway revolves that 2D wall profile; RBC-shaped massless tracers follow the computed slice.</p></article>
+              <article><span>INCLUDES</span><p>2D D2Q9 BGK lattice-Boltzmann flow, rigid no-slip walls, smooth constrained geometry, a normalized axial near-wall gradient proxy, and a separate thin-cylinder pressure–radius relative wall-tension relation. The 3D cutaway revolves that 2D wall profile; RBC-shaped massless tracers follow the computed slice.</p></article>
               <article><span>DOES NOT INCLUDE</span><p>Patient anatomy, pulsatile flow, compliant or anisotropic tissue, non-Newtonian or cell-resolved blood physics, hematocrit, cell deformation, aggregation, collisions, hemolysis or margination, 3D secondary flow, plaque biology, clotting, a physical time scale, calibrated clinical units, diagnosis, treatment selection or response, or rupture prediction.</p></article>
               <article><span>READ COLOR CAREFULLY</span><p>Bright color marks a modeled quantity—not “disease here.” Low, high, and oscillatory shear can each matter in different biological contexts. This instrument cannot tell where plaque will form.</p></article>
-              <article><span>PRESSURE ≠ FLOW SHEAR</span><p>The pressure slider changes only the separate P × r relative-tension teaching layer, assuming constant thickness. It does not silently make the CFD run faster. That separation is the lesson.</p></article>
+              <article><span>PRESSURE ≠ FLOW SHEAR</span><p>The pressure slider changes only the separate thin-cylinder P × r relative-tension teaching layer. It is not hoop stress and does not silently make the CFD run faster. That separation is the lesson.</p></article>
             </div>
             <p className="citation-note">Methods follow the standard D2Q9 BGK formulation and Zou–He velocity/density boundaries. 3D geometry, medication pathways, and lifestyle evidence are interpretive layers—not additional solver physics. Scientific references and validation scripts are documented in the project README. No physician review or clinical validation was performed. Educational use only; not diagnostic, predictive, or treatment guidance.</p>
             <button type="button" className="modal-primary" onClick={() => setLimitsOpen(false)}>Return to the instrument</button>
@@ -1128,7 +1165,7 @@ export function VesselDeltaLab() {
           <section className="verification-modal rupture-modal" role="dialog" aria-modal="true" aria-labelledby="rupture-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="modal-close" type="button" onClick={() => setRuptureOpen(false)} aria-label="Close rupture boundary">×</button>
             <p className="modal-kicker">MODEL BOUNDARY · NOT CALCULATED</p>
-            <h2 id="rupture-title">The honest answer<br />is <em>no.</em></h2>
+            <h2 id="rupture-title">This model<br /><em>cannot answer.</em></h2>
             <p className="modal-deck">A rigid-wall flow solver has no deforming tissue and no failure criterion. A cinematic tear would look dramatic but would not be physics.</p>
             <div className="missing-inputs">
               <article><span>01</span><strong>Wall thickness</strong><p>Not measured or spatially modeled.</p></article>

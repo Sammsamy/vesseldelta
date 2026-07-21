@@ -6,8 +6,9 @@ Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export
 
 - Browser at 1280×720 or 1440×900.
 - Start on **Idealized artery narrowing**, **3D interpretation**, **Modeled velocity**, default flow drive, and default illustrative pressure factor.
+- Wait until the status changes from **FIELD RECOMPUTING** to **FIELD EVOLVING** and all three comparison cards appear before starting the take. The audited local warm-up took about seven seconds; deployment timing may differ.
 - Confirm the 3D cutaway rotates smoothly before recording.
-- Keep **Computed slice**, **Idealized lumen restoration**, **Verify physics**, and **Can this vessel rupture?** in a practiced click path.
+- Keep **Computed slice**, **Idealized lumen restoration**, **Verify physics**, and **Can this model predict rupture?** in a practiced click path.
 - Record a clean take with natural pauses, then trim dead time.
 - Do not claim 3D CFD, simulated blood cells, real plaque, treatment efficacy, immediate diet effects, rupture prediction, patient specificity, or “the first browser blood-flow simulator.”
 
@@ -55,7 +56,7 @@ Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export
 
 ### 1:17–1:29 — turn refusal into a feature
 
-**Action:** Click **Can this vessel rupture?** and hold on the missing-input cards.
+**Action:** Click **Can this model predict rupture?** and hold on the missing-input cards.
 
 **Say:**
 
@@ -67,7 +68,7 @@ Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export
 
 **Say:**
 
-> The CDC reports a 119.9-million-adult estimate from 2017 through early 2020. The lifestyle cards show AHA ranges, scoped here as approximate averages for adults without hypertension. They overlap, vary, and are never added or fed into the flow model.
+> The CDC reports a 119.9-million-adult estimate from 2017 through early 2020. The lifestyle cards show AHA ranges for adults without hypertension. Do not sum them into a personal forecast; they never feed the flow model.
 
 ### 1:45–1:59 — explain medicine without prescribing
 
@@ -83,7 +84,7 @@ Target: **2 minutes 42 seconds**. Use a real voiceover and keep the final export
 
 **Say:**
 
-> The model is inspectable. Judges can see both local fields, the low-Mach gate, density stability, a fitted Poiseuille-profile check, and every numerical safety intervention. The repository includes eight automated tests and a reproducible ten-thousand-step benchmark.
+> The model is inspectable. Judges can see both local fields, the low-Mach and flux gates, density stability, a fitted Poiseuille-profile check, and every numerical safety intervention. The repository includes nine automated tests and a reproducible ten-thousand-step benchmark.
 
 ### 2:18–2:42 — Codex decisions and close
 

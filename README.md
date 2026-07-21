@@ -6,7 +6,7 @@ VesselDelta is a zero-install vascular-mechanics learning instrument. A learner 
 
 The product is deliberately split into two layers:
 
-1. **Computed mechanics:** a `160 × 70` two-dimensional, rigid-wall D2Q9 flow field; edited-versus-reference velocity and vorticity; a normalized axial near-wall gradient proxy; and a separate constant-thickness relative wall-tension index.
+1. **Computed mechanics:** a `160 × 70` two-dimensional, rigid-wall D2Q9 flow field; edited-versus-reference velocity and vorticity; a normalized axial near-wall gradient proxy; and a separate thin-cylinder relative circumferential wall-tension index.
 2. **Interpretive teaching:** an axisymmetric 3D cutaway, RBC-inspired massless tracers, four vessel stories, population-level hypertension evidence, medication-mechanism animations, an idealized lumen-restoration animation, and a lesson about why rupture cannot be calculated here.
 
 The interpretive layer never becomes hidden solver input. There is no 3D CFD, blood-cell model, pharmacokinetic model, treatment-response model, plaque-growth model, or rupture model.
@@ -44,7 +44,7 @@ The scenario names are teaching stories, not reconstructed body-specific anatomy
 |---|---|---|---|
 | **Reference channel** | Straight idealized channel at the selected flow drive | Establish the parabolic reference and `1.00×` counterfactual | Not a population-average artery |
 | **Idealized artery narrowing** | Smooth Gaussian 40% minimum-diameter reduction | A narrowed lumen produces a throat jet, larger near-wall gradient, and a different downstream turning field | Not a carotid bifurcation and not plaque biology |
-| **Idealized aortic-like bulge** | Smooth off-center expansion of the same 2D channel | Widening changes the local flow field while radius independently raises the constant-thickness wall-tension index | Not patient aortic anatomy and not an aneurysm rupture model |
+| **Idealized aortic-like bulge** | Smooth off-center expansion of the same 2D channel | Widening changes the local flow field while radius independently raises the thin-cylinder wall-tension index | Not patient aortic anatomy and not an aneurysm rupture model |
 | **Higher pressure state** | Straight CFD geometry plus a `160/120 = 1.33×` illustrative pressure factor in the separate wall-tension relation | Higher pressure raises a relative circumferential-tension index without pretending that blood pressure is simply faster flow | The number is a dimensionless model ratio, not millimeters of mercury, a patient reading, or a CFD pressure boundary |
 
 ## What is actually computed
@@ -77,6 +77,8 @@ The reference vessel is a second solver, not a hard-coded “healthy” number. 
 
 Resetting to **Reference channel** returns the ratios toward `1.00×`. Narrowing the lumen makes independently computed fields separate.
 
+New presets receive a deterministic 5,000-step accelerated warm-up. The browser advances up to 12 LBM iterations per animation frame during that phase, then returns to its normal display cadence. These iterations are numerical convergence work, not physical time; ratios stay blank until warm-up finishes and both fields pass the `2%` absolute flux-mismatch gate.
+
 The exposed flow drive is capped at `0.020` lattice units. At the tightest reachable `0.54×` lumen, a 10,000-step envelope test remained at `Ma 0.0942` with zero counted safety interventions. If any live field nevertheless crosses the Mach, density, finite-value, or intervention gate, VesselDelta withholds all comparison cards and directs the learner to **Verify physics**.
 
 ## The 3D cutaway
@@ -104,13 +106,13 @@ The rings do not enter the collision or boundary equations. The feature therefor
 VesselDelta does **not** model systemic hypertension by increasing inlet speed. The interface exposes two independent controls:
 
 1. **Flow drive** changes the idealized inlet velocity used by both CFD fields.
-2. **Illustrative pressure factor** changes only the separate constant-thickness wall-tension lesson:
+2. **Illustrative pressure factor** changes only the separate thin-cylinder wall-tension lesson:
 
 ```text
 relative wall-tension index = (P / P0) * (r / r0)
 ```
 
-The interface fixes thickness and illustrates only the direction of pressure and radius under a thin, cylindrical, uniform-wall assumption. It is a dimensionless relative index, not calibrated wall stress, tissue failure, rupture probability, or patient risk.
+The interface illustrates only the direction of pressure and radius under a thin, cylindrical membrane assumption. `P × r` represents circumferential membrane tension per unit axial length; the displayed number is a dimensionless relative index, not calibrated tension, hoop stress, tissue failure, rupture probability, or patient risk.
 
 The burden cards quote the CDC’s June 2, 2026 summary: `48.1%` or `119.9 million` U.S. adults met its cited hypertension definition, and `22.5%` of adults with hypertension had controlled blood pressure, both from NHANES 2017–March 2020 estimates; high blood pressure was also a primary or contributing cause on `680,179` U.S. death certificates in 2024. “Primary or contributing” is not “sole cause.” [CDC: High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 
@@ -120,7 +122,7 @@ The lifestyle cards reproduce the approximate systolic ranges shown in the Ameri
 - lower sodium intake: about `1–4 mm Hg`;
 - aerobic exercise: about `2–7 mm Hg`.
 
-These are overlapping, variable, sustained effects. They are not added together, applied to the CFD, or used to forecast an individual. [AHA: Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) The broader 2025 AHA/ACC guideline strongly recommends heart-healthy eating, sodium reduction, physical activity, and other lifestyle measures while tying medication decisions to clinical context. [AHA/ACC: 2025 High Blood Pressure Guideline—Top Things to Know](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
+These are overlapping, variable, sustained effects. The displayed ranges are not arithmetically summed into a personal forecast, applied to the CFD, or used to forecast an individual; combined effects vary. [AHA: Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) The broader 2025 AHA/ACC guideline strongly recommends heart-healthy eating, sodium reduction, physical activity, and other lifestyle measures while tying medication decisions to clinical context. [AHA/ACC: 2025 High Blood Pressure Guideline—Top Things to Know](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 
 ## Medication mechanism theatre
 
@@ -135,7 +137,7 @@ The FDA summarizes ACE inhibitors and ARBs as keeping vessels from narrowing, ca
 
 ## Rupture-boundary lesson
 
-The **Can this vessel rupture?** interaction answers **no—not from this model**. A rigid wall cannot deform or fail. VesselDelta has no measured wall thickness, patient-specific material law, failure threshold, longitudinal growth history, asymmetric 3D anatomy, or fluid–structure coupling. It computes only the fluid field and a constant-thickness relative wall-tension index. It does not compute rupture stress, probability, or timing.
+The **Can this model predict rupture?** interaction answers **this model cannot answer**. A rigid wall cannot deform or fail. VesselDelta has no measured wall thickness, patient-specific material law, failure threshold, longitudinal growth history, asymmetric 3D anatomy, or fluid–structure coupling. It computes only the fluid field and a thin-cylinder relative wall-tension index. It does not compute rupture stress, probability, or timing.
 
 ## Validation
 
@@ -155,10 +157,10 @@ The automated suite covers:
 - stenosis jet, shear, and vorticity changes relative to control;
 - idealized lumen restoration without overshooting the control diameter;
 - aneurysm geometry constraints;
-- independent pressure/radius/thickness scaling;
+- independent pressure/radius scaling;
 - minimum-gap preservation during repeated sculpting.
 
-The recorded 10,000-step steady benchmark produced `<0.3%` signed inlet/outlet mass-flux mismatch in both healthy and stenosis presets, with no counted safety interventions. The stenosis reached `1.607×` peak speed and a `3.505×` relative axial near-wall gradient proxy versus the control. See [VALIDATION.md](./VALIDATION.md) for the exact record and what it does **not** establish.
+The recorded 10,000-step steady benchmark produced `<0.4%` absolute inlet/outlet mass-flux mismatch in both healthy and stenosis presets, with no counted safety interventions. The stenosis reached `1.608×` peak speed and a `3.492×` relative axial near-wall gradient proxy versus the control. Live comparison cards are now withheld while either field is recomputing or remains above the same `2%` flux-mismatch gate. See [VALIDATION.md](./VALIDATION.md) for the exact record and what it does **not** establish.
 
 The browser verification drawer reads the current solver rather than copying benchmark constants. The numbers vary while a newly edited field evolves. The WebGL layer has no independent clinical or numerical validation: its integrity comes from an inspectable mapping back to the current 2D field.
 
@@ -166,7 +168,7 @@ The browser verification drawer reads the current solver rather than copying ben
 
 **VesselDelta is an educational intuition tool, not clinical CFD, medical advice, a diagnostic device, or a patient-risk model. No physician review, educator study, or clinical validation was performed.**
 
-It uses a steady 2D Newtonian fluid, rigid walls, idealized boundary conditions, lattice units, normalized rather than calibrated shear, no physical time scale, and a simplified constant-thickness wall-tension relation. It does not include patient anatomy, compliant or anisotropic tissue, non-Newtonian blood rheology, cell-resolved blood, hematocrit, 3D secondary flow, clotting, plaque biology, calibrated clinical units, treatment response, or rupture mechanics.
+It uses a steady 2D Newtonian fluid, rigid walls, idealized boundary conditions, lattice units, normalized rather than calibrated shear, no physical time scale, and a simplified thin-cylinder relative wall-tension relation. It does not include patient anatomy, compliant or anisotropic tissue, non-Newtonian blood rheology, cell-resolved blood, hematocrit, 3D secondary flow, clotting, plaque biology, calibrated clinical units, treatment response, or rupture mechanics.
 
 Color means “higher or lower value in this model,” not “disease here.” Wall shear is biologically contextual: low, high, and oscillatory patterns can matter in different vascular settings. This instrument cannot show exactly where plaque will form or where an aneurysm will rupture.
 

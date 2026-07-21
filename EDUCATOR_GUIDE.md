@@ -10,7 +10,7 @@ By the end, a learner should be able to:
 
 1. identify the 2D D2Q9 slice as the computational source of truth and the 3D cutaway as an axisymmetric interpretation;
 2. predict that narrowing a fixed-flow pathway accelerates a throat jet;
-3. distinguish modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a constant-thickness relative wall-tension index;
+3. distinguish modeled velocity, signed vorticity, a normalized axial near-wall gradient proxy, and a thin-cylinder relative wall-tension index;
 4. explain why idealized lumen restoration is a steady geometry counterfactual rather than a stent or treatment-outcome model;
 5. interpret population lifestyle ranges without adding them or applying them to an individual;
 6. explain why a rigid-wall model cannot predict rupture;
@@ -65,7 +65,7 @@ Switch in order:
 1. **Modeled velocity** — magnitude of local flow.
 2. **Vorticity** — signed local turning, not a blanket claim of turbulence.
 3. **Shear proxy** — a normalized axial near-wall grid gradient, not a slope-aware wall-normal derivative and not pascals.
-4. **Wall tension** — a separate constant-thickness pressure–radius index, not a CFD quantity.
+4. **Wall tension** — a separate thin-cylinder pressure–radius index, not a CFD quantity.
 
 Ask:
 
@@ -107,17 +107,17 @@ relative wall-tension index = (P / P0) × (r / r0)
 
 Ask:
 
-- If pressure rises while radius and thickness stay fixed, which direction does the index move?
+- If pressure rises while radius stays fixed, which direction does the index move?
 - If radius increases while pressure stays fixed, which direction does it move?
 - Did the pressure slider make the CFD run faster?
 
 The intended answers are: up, up, and no.
 
-Choose **Higher pressure state** and point out that the story initializes a `160/120` illustrative ratio while leaving the straight CFD geometry and flow drive independent. The interface fixes thickness. The number is not mm Hg, does not diagnose hypertension, and does not reproduce a person’s blood pressure.
+Choose **Higher pressure state** and point out that the story initializes a `160/120` illustrative ratio while leaving the straight CFD geometry and flow drive independent. The thin-cylinder `P × r` number is not mm Hg or hoop stress, does not diagnose hypertension, and does not reproduce a person’s blood pressure.
 
 ### 10:30–11:30 — ask the rupture question
 
-Open **Can this vessel rupture?**
+Open **Can this model predict rupture?**
 
 Have students name the missing inputs before revealing the list: measured wall thickness, material strength/failure law, longitudinal growth and asymmetric anatomy, and fluid–structure coupling.
 
@@ -127,7 +127,7 @@ State:
 
 ### 11:30–13:30 — evidence without fake biology
 
-Scroll to the lifestyle cards. The AHA source lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); the interface scopes them as approximate averages for adults without hypertension. Ask why the three numbers must not be added. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
+Scroll to the lifestyle cards. The AHA source lists approximate systolic ranges for sustained DASH-style eating (`3–7 mm Hg`), sodium reduction (`1–4 mm Hg`), and aerobic exercise (`2–7 mm Hg`); the interface scopes them as approximate averages for adults without hypertension. Ask why the displayed ranges should not be arithmetically summed into a personal forecast. Intended reasons include overlapping mechanisms, variable populations, adherence, baseline differences, and individual response.
 
 Open one medication mechanism. Emphasize that the animation explains a pathway while the CFD remains unchanged. Ask which statement is more defensible:
 
@@ -214,7 +214,7 @@ No. Real rupture mechanics require patient-specific geometry, wall thickness and
 |---|---|---|---|
 | Separates compute from presentation | Calls the cutaway 3D CFD | Notes the 2D solver | Explains the computed-grid color plane, ring projection, and missing volumetric flow |
 | Predicts stenosis response | No within-model prediction | Predicts faster flow | Predicts a throat jet and separates it from downstream turning |
-| Separates forces | Conflates pressure and shear | Names both | Explains tangential shear versus constant-thickness relative wall tension |
+| Separates forces | Conflates pressure and shear | Names both | Explains tangential shear versus thin-cylinder relative wall tension |
 | Interprets treatment counterfactual | Calls it efficacy | Notes geometry changed | States what recomputes and names absent device/clinical mechanics |
 | Interprets evidence | Adds ranges or personalizes | Calls them population ranges | Explains overlap, sustained behavior, and non-coupling to CFD |
 | Critiques the model | No limitation | Names one limitation | Names three and explains why they matter |

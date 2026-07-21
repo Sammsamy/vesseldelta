@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { HemoEngine, wallLoadRatio } from "../app/hemo-engine.js";
+import { comparisonMetricsReady, HemoEngine, wallLoadRatio } from "../app/hemo-engine.js";
 
 function run(preset, steps = 520) {
   const engine = new HemoEngine(160, 70, { preset });
@@ -67,11 +67,22 @@ test("aneurysm preset creates a saccular expansion without closing the lumen", (
   assert.ok(engine.getMetrics().minDiameterRatio >= 0.99);
 });
 
-test("pressure-load lesson scales independently with pressure, radius, and thickness", () => {
-  assert.equal(wallLoadRatio(120, 1, 1), 1);
-  assert.equal(wallLoadRatio(180, 1, 1), 1.5);
-  assert.equal(wallLoadRatio(120, 1.4, 1), 1.4);
-  assert.equal(wallLoadRatio(120, 1, 0.5), 2);
+test("pressure-load lesson scales independently with pressure and radius", () => {
+  assert.equal(wallLoadRatio(120, 1), 1);
+  assert.equal(wallLoadRatio(180, 1), 1.5);
+  assert.equal(wallLoadRatio(120, 1.4), 1.4);
+});
+
+test("comparison gate withholds unsettled or high-flux-mismatch fields", () => {
+  const ready = { mach: 0.05, densitySpread: 0.005, fluxMismatch: 0.01, sanitizationCount: 0 };
+  assert.equal(comparisonMetricsReady(ready, ready), true);
+  assert.equal(comparisonMetricsReady(ready, ready, true), false);
+  assert.equal(comparisonMetricsReady({ ...ready, fluxMismatch: 0.021 }, ready), false);
+  assert.equal(comparisonMetricsReady(ready, { ...ready, densitySpread: 0.021 }), false);
+
+  const warmedReference = run("healthy", 5_000).getMetrics();
+  const warmedNarrowing = run("stenosis", 5_000).getMetrics();
+  assert.equal(comparisonMetricsReady(warmedNarrowing, warmedReference), true);
 });
 
 test("constrained sculpting preserves a connected minimum gap and finite field", () => {

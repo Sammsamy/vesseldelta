@@ -124,7 +124,11 @@ export class HemoEngine {
         const halfHeight = Math.max(2, (this.bottom[x] - this.top[x]) / 2);
         const center = (this.bottom[x] + this.top[x]) / 2;
         const eta = clamp((y - center) / halfHeight, -1, 1);
-        const localUx = 1.5 * this.meanVelocity * (1 - eta * eta);
+        // Seed each axial section with approximately matched volumetric flux.
+        // This is only a low-Mach warm start; the same LBM boundaries and
+        // collision/streaming equations still determine the evolved field.
+        const localMeanVelocity = this.meanVelocity * (this.baseRadius / halfHeight);
+        const localUx = 1.5 * localMeanVelocity * (1 - eta * eta);
         for (let i = 0; i < 9; i += 1) {
           this.f[cell * 9 + i] = equilibrium(i, 1, localUx, 0);
         }
@@ -498,8 +502,21 @@ export class HemoEngine {
   }
 }
 
-export function wallLoadRatio(pressure, radiusRatio, thicknessRatio = 1) {
-  return (pressure / 120) * radiusRatio / Math.max(0.35, thicknessRatio);
+export function wallLoadRatio(pressure, radiusRatio) {
+  return (pressure / 120) * radiusRatio;
+}
+
+export function comparisonMetricsReady(active, control, settling = false) {
+  if (settling) return false;
+  return [active, control].every((metrics) => (
+    Number.isFinite(metrics.mach)
+    && Number.isFinite(metrics.densitySpread)
+    && Number.isFinite(metrics.fluxMismatch)
+    && metrics.mach < 0.1
+    && metrics.densitySpread < 0.02
+    && metrics.fluxMismatch < 0.02
+    && metrics.sanitizationCount === 0
+  ));
 }
 
 export function pressurePreset(value) {

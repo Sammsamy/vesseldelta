@@ -36,7 +36,9 @@ The browser advances two `160 × 70` fields under the same flow-drive setting: t
 
 The exposed inlet-flow control is limited to `0.012–0.020` lattice units. The upper bound was checked for 10,000 steps at the tightest reachable `0.54×` lumen: the field remained below `Ma 0.10`, finite, within density/flux gates, and free of counted safety interventions.
 
-The interface also evaluates the live edited and reference fields before showing comparison ratios. If Mach reaches `0.10`, density leaves the live gate, a value is non-finite, or a safety intervention is counted, the three headline comparisons are replaced with an outside-gate warning.
+New presets use a deterministic 5,000-step accelerated warm-up before comparison ratios are shown. The browser advances up to 12 LBM iterations per animation frame during that phase, then returns to the normal display cadence. These are numerical iterations, not physical time.
+
+The interface evaluates both the edited and reference fields before showing comparison ratios. Ratios remain withheld during warm-up, while either field exceeds `2%` absolute inlet/outlet mass-flux mismatch, if Mach reaches `0.10`, if density leaves the live gate, if a value is non-finite, or if a safety intervention is counted.
 
 ## Geometry editing and scenario definitions
 
@@ -74,13 +76,13 @@ This grid-dependent near-wall proxy is useful for within-model comparison, not c
 
 ## Separate relative wall-tension relation
 
-The wall-tension lens is not part of the LBM solve. The production interface holds wall thickness constant and displays the dimensionless relation
+The wall-tension lens is not part of the LBM solve. Under a thin cylindrical membrane relation, circumferential tension per unit axial length is proportional to `P × r`; the interface displays the dimensionless relation
 
 ```text
 T_relative = (P/P0) * (r/r0)
 ```
 
-The interface varies the illustrative pressure factor and derives local radius from the idealized geometry. The exported helper retains an optional thickness-ratio argument for an algebraic unit test, but every production call uses its default `t/t0 = 1`; no thickness is measured or spatially modeled. This is a directional teaching index under a thin, cylindrical, uniform-wall assumption. It is not calibrated tension or stress and cannot represent compliant, anisotropic, spatially varying vascular tissue or rupture.
+The interface varies the illustrative pressure factor and derives local radius from the idealized geometry. This is a directional tension index under a thin, cylindrical membrane assumption. It is not calibrated tension, hoop stress, or a tissue model and cannot represent compliant, anisotropic, spatially varying vascular tissue or rupture. Wall thickness would be required to estimate hoop stress, but no thickness is measured or modeled here.
 
 ## Computed-grid color map and 3D mapping
 
@@ -126,7 +128,7 @@ The interface displays three approximate systolic-blood-pressure ranges from the
 
 Source: [AHA, Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf).
 
-The interface scopes these as approximate average ranges for adults without hypertension. They are overlapping, non-additive values associated with sustained behavior, not personal forecasts. They do not modify wall geometry, blood viscosity, flow drive, the illustrative pressure factor, or any person-specific prediction. The 2025 AHA/ACC guideline broadly recommends lifestyle measures in prevention and management while requiring clinical context for treatment decisions. [AHA/ACC guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
+The interface scopes these as approximate average ranges for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary. They do not modify wall geometry, blood viscosity, flow drive, the illustrative pressure factor, or any person-specific prediction. The 2025 AHA/ACC guideline broadly recommends lifestyle measures in prevention and management while requiring clinical context for treatment decisions. [AHA/ACC guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 
 ## Medication mechanism theatre
 
@@ -154,7 +156,7 @@ The rupture interaction is a refusal designed as a lesson. A rigid-wall solver h
 3. longitudinal growth and asymmetric anatomy;
 4. fluid–structure coupling.
 
-Accordingly, VesselDelta reports no rupture stress, threshold, probability, or timing. The separate constant-thickness pressure–radius tension index must not be interpreted as rupture risk.
+Accordingly, VesselDelta reports no rupture stress, threshold, probability, or timing. The separate thin-cylinder pressure–radius tension index must not be interpreted as rupture risk.
 
 ## Automated validation gates
 
@@ -168,11 +170,12 @@ Accordingly, VesselDelta reports no rupture stress, threshold, probability, or t
 6. stenosis peak speed exceeds baseline by at least `1.35×`;
 7. stenosis peak axial near-wall gradient proxy exceeds baseline by at least `2.5×`;
 8. stenosis peak vorticity exceeds baseline by at least `2.5×`;
-9. full idealized lumen restoration reaches but does not exceed the reference diameter, remains finite and low-Mach after settling, and reduces the stenosis jet and shear toward the reference;
+9. full idealized lumen restoration reaches but does not exceed the reference diameter, remains finite and low-Mach after settling, and reduces the stenosis jet and axial near-wall gradient proxy toward the reference;
 10. the aneurysm preset enlarges rather than closes the lumen;
-11. the wall-tension helper’s pressure, radius, and optional thickness scaling is algebraically independent of the CFD state, while the production interface fixes thickness at its reference value;
-12. repeated sculpting preserves the minimum gap and a finite, low-Mach field;
-13. the tightest reachable lumen at the maximum exposed `0.020` flow drive remains below `Ma 0.10`, finite, inside density/flux gates, and free of counted safety interventions after 10,000 steps.
+11. the wall-tension helper’s pressure and radius scaling is algebraically independent of the CFD state;
+12. the comparison gate withholds ratios while a field is settling or while either field exceeds `2%` absolute inlet/outlet mass-flux mismatch;
+13. repeated sculpting preserves the minimum gap and a finite, low-Mach field;
+14. the tightest reachable lumen at the maximum exposed `0.020` flow drive remains below `Ma 0.10`, finite, inside density/flux gates, and free of counted safety interventions after 10,000 steps.
 
 `tests/rendered-html.test.mjs` separately confirms that the production shell renders the 2D/3D model receipt, treatment theatre, current burden claim, and illustrative label.
 
