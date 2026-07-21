@@ -225,6 +225,7 @@ app/globals.css             responsive visual system and accessibility states
 tests/hemo-engine.test.mjs  numerical, geometry, and restoration checks
 tests/rendered-html.test.mjs
 EDUCATOR_GUIDE.md           prediction-to-explanation lesson
+LEARNER_TEST_PROTOCOL.md     optional honest pre/post product-feedback protocol
 METHODS.md                  equations, mappings, assumptions, and protocol
 VALIDATION.md               reproducible benchmark and release evidence
 ```

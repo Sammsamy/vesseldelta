@@ -100,6 +100,7 @@ We also learned that visible falsifiability can be part of the design. A learner
 ## What is next
 
 - classroom testing with pre/post concept questions;
+- run the documented informal learner protocol and report only genuine, fully disclosed results;
 - physician and educator review of language and pedagogy;
 - WebGL performance and fallback QA across representative devices;
 - grid-convergence tooling and improved wall-normal shear sampling;
