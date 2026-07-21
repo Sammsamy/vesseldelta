@@ -128,6 +128,37 @@ function createWallSectionGeometry() {
   return geometry;
 }
 
+function createWallEndGeometry() {
+  const geometry = new THREE.BufferGeometry();
+  const endCount = 2;
+  const layersPerSide = 4;
+  const vertexCount = endCount * SIDES * layersPerSide;
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
+
+  const indices: number[] = [];
+  for (let end = 0; end < endCount; end += 1) {
+    const endOffset = end * SIDES * layersPerSide;
+    for (let side = 0; side < SIDES; side += 1) {
+      if (side >= CUTAWAY_START_SIDE && side < CUTAWAY_END_SIDE) continue;
+      const nextSide = (side + 1) % SIDES;
+      const sideOffset = endOffset + side * layersPerSide;
+      const nextSideOffset = endOffset + nextSide * layersPerSide;
+      for (let layer = 0; layer < layersPerSide - 1; layer += 1) {
+        const inner = sideOffset + layer;
+        const outer = inner + 1;
+        const nextInner = nextSideOffset + layer;
+        const nextOuter = nextInner + 1;
+        indices.push(inner, nextInner, outer, outer, nextInner, nextOuter);
+      }
+    }
+  }
+
+  geometry.setIndex(indices);
+  return geometry;
+}
+
 function sampleField(engine: HemoEngine, gx: number, layer: TheatreLayer, pressure: number) {
   if (layer === "wallLoad") {
     const radiusRatio = (engine.bottom[gx] - engine.top[gx]) / (engine.baseRadius * 2);
@@ -260,6 +291,49 @@ function updateWallSection(geometry: THREE.BufferGeometry, engine: HemoEngine, p
   geometry.computeBoundingSphere();
 }
 
+function updateWallEnds(geometry: THREE.BufferGeometry, engine: HemoEngine, pressure: number) {
+  const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const normals = geometry.getAttribute("normal") as THREE.BufferAttribute;
+  const colors = geometry.getAttribute("color") as THREE.BufferAttribute;
+  const layersPerSide = 4;
+  const radialOffsets = [0.045, 0.078, 0.126, 0.16];
+  const wallPressure = clamp((pressure / 120 - 0.7) / 0.8, 0, 1);
+  const layerColors = [
+    [0.86 + wallPressure * 0.08, 0.12, 0.19],
+    [0.68 + wallPressure * 0.09, 0.065, 0.13],
+    [0.48 + wallPressure * 0.12, 0.04, 0.095],
+    [0.3 + wallPressure * 0.13, 0.028, 0.07],
+  ] as const;
+
+  for (let end = 0; end < 2; end += 1) {
+    const gx = end === 0 ? 0 : engine.nx - 1;
+    const center = (engine.top[gx] + engine.bottom[gx]) / 2;
+    const centerOffset = ((center - engine.center) / engine.baseRadius) * 0.34;
+    const radiusRatio = (engine.bottom[gx] - engine.top[gx]) / (engine.baseRadius * 2);
+    const x = end === 0 ? -4.75 : 4.75;
+    const normalX = end === 0 ? -1 : 1;
+    const endOffset = end * SIDES * layersPerSide;
+
+    for (let side = 0; side < SIDES; side += 1) {
+      const angle = (side / SIDES) * Math.PI * 2;
+      const radialY = Math.cos(angle);
+      const radialZ = Math.sin(angle);
+      for (let layer = 0; layer < layersPerSide; layer += 1) {
+        const radius = radiusRatio * 0.92 + radialOffsets[layer];
+        const vertex = endOffset + side * layersPerSide + layer;
+        positions.setXYZ(vertex, x, centerOffset + radialY * radius, radialZ * radius);
+        normals.setXYZ(vertex, normalX, 0, 0);
+        colors.setXYZ(vertex, layerColors[layer][0], layerColors[layer][1], layerColors[layer][2]);
+      }
+    }
+  }
+
+  positions.needsUpdate = true;
+  normals.needsUpdate = true;
+  colors.needsUpdate = true;
+  geometry.computeBoundingSphere();
+}
+
 function updateNarrowingOverlay(geometry: THREE.BufferGeometry, engine: HemoEngine) {
   const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
   const normals = geometry.getAttribute("normal") as THREE.BufferAttribute;
@@ -359,7 +433,7 @@ export function VesselTheatre3D({
 }: VesselTheatreProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef({ layer, pressure, paused, stentProgress });
-  const rotationRef = useRef({ x: -0.12, y: -0.18, targetX: -0.12, targetY: -0.18 });
+  const rotationRef = useRef({ x: -0.14, y: -0.27, targetX: -0.14, targetY: -0.27 });
   const [webglError, setWebglError] = useState(false);
 
   useEffect(() => {
@@ -403,6 +477,7 @@ export function VesselTheatre3D({
     const wallGeometry = createTubeGeometry(true);
     const liningGeometry = createTubeGeometry(true);
     const wallSectionGeometry = createWallSectionGeometry();
+    const wallEndGeometry = createWallEndGeometry();
     const fieldGeometry = createTubeGeometry(true);
     const controlGeometry = createTubeGeometry(true);
     const narrowingGeometry = createTubeGeometry(true);
@@ -467,6 +542,7 @@ export function VesselTheatre3D({
     const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
     const liningMesh = new THREE.Mesh(liningGeometry, liningMaterial);
     const wallSectionMesh = new THREE.Mesh(wallSectionGeometry, wallSectionMaterial);
+    const wallEndMesh = new THREE.Mesh(wallEndGeometry, wallSectionMaterial);
     const fieldMesh = new THREE.Mesh(fieldGeometry, fieldMaterial);
     const controlMesh = new THREE.Mesh(
       controlGeometry,
@@ -491,9 +567,10 @@ export function VesselTheatre3D({
     fieldMesh.renderOrder = 1;
     liningMesh.renderOrder = 3;
     wallSectionMesh.renderOrder = 4;
+    wallEndMesh.renderOrder = 4;
     wallMesh.renderOrder = 5;
     narrowingMesh.renderOrder = 6;
-    vessel.add(controlMesh, fieldMesh, liningMesh, wallSectionMesh, wallMesh, narrowingMesh);
+    vessel.add(controlMesh, fieldMesh, liningMesh, wallSectionMesh, wallEndMesh, wallMesh, narrowingMesh);
 
     const slicePixels = new Uint8Array(160 * 70 * 4);
     const sliceTexture = new THREE.DataTexture(slicePixels, 160, 70, THREE.RGBAFormat);
@@ -655,6 +732,7 @@ export function VesselTheatre3D({
         updateTube(wallGeometry, activeEngine, stateRef.current.layer, stateRef.current.pressure, "wall");
         updateTube(liningGeometry, activeEngine, stateRef.current.layer, stateRef.current.pressure, "lining");
         updateWallSection(wallSectionGeometry, activeEngine, stateRef.current.pressure);
+        updateWallEnds(wallEndGeometry, activeEngine, stateRef.current.pressure);
         updateTube(fieldGeometry, activeEngine, stateRef.current.layer, stateRef.current.pressure, "field");
         updateNarrowingOverlay(narrowingGeometry, activeEngine);
         const control = controlRef.current;
@@ -777,6 +855,7 @@ export function VesselTheatre3D({
       wallGeometry.dispose();
       liningGeometry.dispose();
       wallSectionGeometry.dispose();
+      wallEndGeometry.dispose();
       fieldGeometry.dispose();
       controlGeometry.dispose();
       narrowingGeometry.dispose();
@@ -821,7 +900,7 @@ export function VesselTheatre3D({
       <div className="theatre-receipt">
         <span><i /> 3D CUTAWAY · LIVE 2D SOURCE</span>
         <strong>Layered vessel shell around the running flow slice</strong>
-        <small>The outer wall, inner lining, and cut edges show the vessel layers. Their shape comes from the live 2D boundary; they do not simulate tissue or 3D flow. Red-cell shapes follow the live flow as visual tracers.{scenario === "stenosis" ? " Gold marks the narrowing shape, not plaque growth." : ""}{scenario === "aneurysm" ? " The wider shell follows the simple bulge case, not a person’s anatomy." : ""}{scenario === "hypertension" ? " Outward pulses show pressure direction; they do not change the flow model." : ""}{stentProgress > 0.005 ? " Gold rings show an illustrative stent; only the widened passage enters the flow model." : ""}</small>
+        <small>The outer wall, inner lining, and cut edges show the vessel layers. Their shape comes from the live 2D boundary; they do not simulate tissue or 3D flow. Red-cell shapes follow the live flow as visual tracers.{scenario === "stenosis" ? " Gold marks an idealized plaque-shaped narrowing, not plaque growth." : ""}{scenario === "aneurysm" ? " The wider shell follows the simple bulge case, not a person’s anatomy." : ""}{scenario === "hypertension" ? " Outward pulses show pressure direction; they do not change the flow model." : ""}{stentProgress > 0.005 ? " Gold rings show an illustrative stent; only the widened passage enters the flow model." : ""}</small>
         <div className="theatre-material-key" aria-label="Visual material key">
           <b><i className="outer" /> outer wall</b>
           <b><i className="lining" /> inner lining</b>

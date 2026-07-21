@@ -1,6 +1,6 @@
 # VesselDelta submission gallery
 
-The current images were captured before the plain-language redesign and the wall stress and strength lab. Recapture all five images from the final deployed build before upload. Keep the exact filenames and dimensions because the release audit checks them.
+These images capture the approved submission flow. Keep the filenames and dimensions because the release audit checks the core gallery fixtures.
 
 Use `thumbnail-1200x800.jpg` for the Devpost `3:2` thumbnail. Use `00-cover-1280x720.jpg` as the 16:9 gallery cover and YouTube thumbnail fallback.
 

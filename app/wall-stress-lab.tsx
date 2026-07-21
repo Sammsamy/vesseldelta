@@ -46,7 +46,7 @@ export function WallStressLab() {
   };
 
   const status = result.crossedThreshold
-    ? "Arithmetic crossing — not a rupture simulation"
+    ? "Stress crossed your teaching comparison. Illustration only — not a rupture prediction."
     : result.utilization >= 0.75
       ? "Near the selected comparison value"
       : "Below the selected comparison value";
