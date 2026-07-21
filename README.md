@@ -203,7 +203,7 @@ There is no runtime model call. The project demonstrates meaningful Codex/GPT-5.
 
 VesselDelta was created during the Build Week submission period. The current Git history begins on July 21, 2026; the solver and product code are original to this project, and no third-party LBM implementation was copied.
 
-The required primary-task Codex Session ID remains pending verification with `/status`. The Devpost field is labeled `/feedback Codex Session ID`.
+The primary VesselDelta task reports Codex Session ID `019f48c7-345a-70d3-bf51-81bbc847143b`, recorded for the Devpost `/feedback Codex Session ID` field.
 
 ## Run locally
 

@@ -9,7 +9,7 @@
 - **Demo URL:** https://vesseldelta.ankigpt.workers.dev/
 - **Repository:** https://github.com/Sammsamy/vesseldelta (public, MIT)
 - **Video:** pending recording/upload
-- **Codex session ID:** pending verification from the primary build task with `/status`
+- **Codex session ID:** `019f48c7-345a-70d3-bf51-81bbc847143b`
 
 ## Short description
 
@@ -119,7 +119,7 @@ VesselDelta was created during the submission period; the current Git history be
 - [x] Public repository with approved MIT license
 - [x] Local cover and gallery images with bounded captions
 - [x] README collaboration story
-- [ ] Primary-task Codex Session ID verified with `/status`
+- [x] Primary-task Codex Session ID verified from the active task metadata
 - [ ] Public YouTube video under three minutes with real voiceover
 - [ ] Education category selected
 - [ ] Individual submission

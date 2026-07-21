@@ -45,8 +45,8 @@ SNAP authorization does not transfer to VesselDelta. Before any release mutation
 
 ## 5. Retrieve the primary Codex Session ID
 
-- [ ] In the primary VesselDelta build task, run `/status` and copy the Session ID.
-- [ ] Record it in `release-evidence.json` and the Devpost field labeled `/feedback Codex Session ID`.
+- [x] Verify the Session ID reported by the primary VesselDelta task.
+- [x] Record it in `release-evidence.json` and reserve it for the Devpost field labeled `/feedback Codex Session ID`.
 
 ## 6. Record the real-voice demo
 
