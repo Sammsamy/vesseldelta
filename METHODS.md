@@ -2,9 +2,12 @@
 
 ## Scope
 
-VesselDelta solves a deliberately idealized two-dimensional channel-flow problem to build mechanics intuition through controlled within-model comparisons. All CFD values are lattice units. Outputs are normalized or relative unless explicitly stated otherwise.
+VesselDelta contains two separate experiments.
 
-The product has one numerical source of truth: the current **2D D2Q9 slice**. The 3D cutaway, RBC-inspired objects, scenario names, higher-pressure force cue, lifestyle cards, treatment pathways, and rupture-boundary interaction are interpretive layers. They do not add hidden physics to the solver.
+1. A live two-dimensional flow model compares a changed vessel with a straight reference. Flow values use lattice units and normalized within-model ratios.
+2. A thin-wall calculator computes circumferential stress from selected pressure, radius, and wall thickness. It performs explicit unit conversion and reports stress in kilopascals.
+
+The two calculations are not coupled. Raising the teaching pressure does not make the flow field run faster. The 3D cutaway, red blood cell forms, scenario names, pressure arrows, threshold tear, lifestyle cards, and treatment pathways are visual or explanatory layers. They do not add hidden physics.
 
 ## D2Q9 BGK model
 
@@ -58,7 +61,7 @@ The four interface stories map to the solver as follows:
 | Reference channel | Straight channel | A numerical reference, not measured anatomy |
 | Idealized artery narrowing | Gaussian 40% minimum-diameter reduction | No carotid bifurcation and no plaque tissue model |
 | Idealized aortic-like bulge | Smooth off-center expansion, roughly `1.3–1.5×` maximum diameter in tests | No patient aorta, wall compliance, or rupture mechanics |
-| Higher pressure state | Straight channel; illustrative pressure factor initialized to `160/120` only in the separate wall-tension relation | The CFD flow drive does not change; the number is a dimensionless ratio, not mm Hg or a patient-specific input |
+| Higher pressure state | Straight flow channel; selected teaching pressure initialized to `160 mm Hg` only in the separate wall-load display | The flow drive does not change; this is not a patient reading, treatment target, or pressure boundary for the flow solver |
 
 The anatomical names communicate familiar contexts; they do not claim body-specific geometry.
 
@@ -74,15 +77,51 @@ and is normalized against the straight control channel. It is not a slope-aware 
 
 This grid-dependent near-wall proxy is useful for within-model comparison, not clinical wall-shear-stress measurement.
 
-## Separate relative wall-tension relation
+## Relative wall-load display in the vessel view
 
-The wall-tension lens is not part of the LBM solve. Under a thin cylindrical membrane relation, circumferential tension per unit axial length is proportional to `P × r`; the interface displays the dimensionless relation
+The wall-load lens in the main vessel view is not part of the LBM solve. Under a thin cylindrical membrane relation, circumferential tension per unit axial length is proportional to `P × r`. The view displays the relative relation
 
 ```text
 T_relative = (P/P0) * (r/r0)
 ```
 
-The interface varies the illustrative pressure factor and derives local radius from the idealized geometry. This is a directional tension index under a thin, cylindrical membrane assumption. It is not calibrated tension, hoop stress, or a tissue model and cannot represent compliant, anisotropic, spatially varying vascular tissue or rupture. Wall thickness would be required to estimate hoop stress, but no thickness is measured or modeled here.
+The interface uses selected teaching pressure and derives local radius from the idealized geometry. This display is a relative wall-load lesson, not the wall-stress calculator described below. It does not model compliant, anisotropic, or spatially varying tissue.
+
+## Independent thin-wall stress and strength lab
+
+The wall lab computes a circumferential membrane stress for a uniform thin-walled cylinder:
+
+```text
+σ = P · r / t
+```
+
+`P` is selected transmural pressure. `r` is selected inner radius. `t` is selected wall thickness. The implementation converts `mm Hg` to pascals using `1 mm Hg = 133.322387415 Pa`, converts `mm` to metres, then converts the result from pascals to `kPa`.
+
+The public controls allow:
+
+- pressure from `80` to `220 mm Hg`;
+- radius from `10` to `35 mm`;
+- wall thickness from `0.50` to `3.00 mm`;
+- selected tissue strength from `400` to `2,000 kPa`.
+
+These are finite teaching-control bounds, not normal ranges, treatment targets, or clinical cutoffs. The lower-level calculation also clamps inputs to documented wider safety bounds before doing arithmetic.
+
+Four presets explain one change at a time:
+
+| Preset | Pressure | Radius | Thickness | Selected strength | Calculated stress | Purpose |
+|---|---:|---:|---:|---:|---:|---|
+| Published large-AAA construction | `120 mm Hg` | `35 mm` | `2.50 mm` | `680 kPa` | `223.982 kPa` | Starting sensitivity example |
+| Raise pressure only | `180 mm Hg` | `35 mm` | `2.50 mm` | `680 kPa` | `335.972 kPa` | Shows linear pressure sensitivity |
+| Make the wall thinner | `120 mm Hg` | `35 mm` | `1.48 mm` | `680 kPa` | `378.347 kPa` | Shows inverse thickness sensitivity |
+| Illustrative threshold crossing | `220 mm Hg` | `35 mm` | `1.50 mm` | `680 kPa` | `684.388 kPa` | Demonstrates arithmetic threshold crossing |
+
+The `35 mm` radius and `2.50 mm` thickness come from the electively repaired group means reported by Di Martino and colleagues, who tested fresh circumferential abdominal aortic aneurysm strips to failure. They reported tensile strength means of `820 ± 90 kPa` for the elective-repair group and `540 ± 60 kPa` for the ruptured-repair group. The app's `680 kPa` starting strength is only the arithmetic midpoint of those two means. The paper did not report `680 kPa` as a clinical failure cutoff. [Di Martino et al., 2006](https://pubmed.ncbi.nlm.nih.gov/16520175/)
+
+The `1.48 mm` thickness preset is the median reported by Raghavan and colleagues across four necropsy abdominal aortic aneurysms. The same study found regional thickness from `0.23 mm` to `4.26 mm`. The preset exposes equation sensitivity and is not a patient-specific thickness map. [Raghavan et al., 2006](https://pubmed.ncbi.nlm.nih.gov/16337949/)
+
+The calculator reports stress divided by selected strength. When `σ ≥ selected strength`, `crossedThreshold` becomes true and the interface shows a tear. That state proves only the arithmetic comparison. The tear is a teaching animation, not crack propagation, a simulated rupture, a safety finding, or a patient prediction.
+
+The result object flags when `t/r > 0.10`, because the thin-wall assumption is then strained. Even below that ratio, the lab still omits patient shape, local stress concentration, anisotropy, thrombus, residual stress, pulsatility, remodeling, material variability, and failure propagation.
 
 ## Computed-grid color map and 3D mapping
 
@@ -130,7 +169,7 @@ The interface displays three approximate systolic-blood-pressure ranges from the
 
 Sources: [AHA, Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf) and [AHA/ACC, full 2025 guideline Table 12](https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249).
 
-The interface scopes these as approximate average ranges for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary. They do not modify wall geometry, blood viscosity, flow drive, the illustrative pressure factor, or any person-specific prediction. The 2025 AHA/ACC guideline broadly recommends lifestyle measures in prevention and management while requiring clinical context for treatment decisions. [AHA/ACC guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
+The interface scopes these as approximate average ranges for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary. They do not modify wall geometry, blood viscosity, flow drive, selected teaching pressure, or any person-specific prediction. The 2025 AHA/ACC guideline broadly recommends lifestyle measures in prevention and management while requiring clinical context for treatment decisions. [AHA/ACC guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 
 ## Medication mechanism theatre
 
@@ -149,16 +188,11 @@ The app’s `48.1%`, `119.9 million`, and `22.5%` cards come from the NHANES 201
 
 These epidemiologic numbers are not model parameters.
 
-## Rupture-boundary lesson
+## Threshold-crossing animation
 
-The rupture interaction is a refusal designed as a lesson. A rigid-wall solver has no deformation or failure criterion. The interface names four absent domains:
+The wall lab shows a visible split only when calculated thin-wall stress meets or exceeds the selected strength. This trigger reads the calculator's Boolean `crossedThreshold`; it does not read color, flow speed, swirl, or the near-wall flow-change proxy.
 
-1. spatially measured wall thickness;
-2. patient-specific tissue strength or material law;
-3. longitudinal growth and asymmetric anatomy;
-4. fluid–structure coupling.
-
-Accordingly, VesselDelta reports no rupture stress, threshold, probability, or timing. The separate thin-cylinder pressure–radius tension index must not be interpreted as rupture risk.
+The animation does not feed back into the flow solver, deform the modeled wall, advance a crack, assign a probability, or predict timing. Its status text always identifies the threshold as illustrative and says it is not a rupture prediction. Real rupture would require patient anatomy, local wall thickness, a material law, loading history, fluid-structure coupling, and a validated failure model.
 
 ## Automated validation gates
 
@@ -179,11 +213,23 @@ Accordingly, VesselDelta reports no rupture stress, threshold, probability, or t
 13. repeated sculpting preserves the minimum gap and a finite, low-Mach field;
 14. a centered minimum-lumen stress path at `0.020` remains inside the numerical gate after 10,000 steps, while a reachable irregular offset path at the same flow is explicitly rejected by `comparisonMetricsReady`.
 
+`tests/wall-failure-model.test.mjs` separately checks:
+
+1. explicit conversion from `mm Hg` and `mm` to `kPa`;
+2. linear scaling with pressure and radius;
+3. inverse scaling with wall thickness;
+4. the reference stress, utilization, and remaining arithmetic margin;
+5. a threshold crossing that remains labeled nonclinical;
+6. finite input clamping with a receipt for every changed value;
+7. rejection of missing, nonnumeric, or nonfinite inputs;
+8. strength-range sensitivity without probability language;
+9. preservation of specimen context and the derived-midpoint caveat.
+
 `tests/rendered-html.test.mjs` separately confirms that the production shell renders the 2D/3D model receipt, treatment theatre, current burden claim, and illustrative label.
 
 `tests/release-audit-gallery.test.mjs` uses isolated synthetic fixtures to prove the release checker rejects missing or renamed covers, extension/content mismatches, extra gallery files, incomplete JPEG data, duplicate content, and wrong dimensions. `scripts/production-smoke.mjs` then starts the built local production server and fetches every public bundle file, including the lazy Three.js theatre chunk, before terminating the server.
 
-These are software, numerical, and directional checks—not anatomical, educational, device, or clinical validation.
+These are software, numerical, and directional checks. They are not anatomical, educational, device, or clinical validation.
 
 ## Live verification
 
@@ -210,8 +256,8 @@ The displayed FPS is not a full GPU frame-time benchmark of the separate Three.j
 - simplified steady inlet/outlet boundary conditions;
 - staircase bounce-back geometry at finite grid resolution;
 - no physical-unit calibration for WSS;
-- no patient data, tissue model, drug-response model, or chronic biology;
-- no physical time calibration, diagnosis, treatment guidance, plaque prediction, stent-outcome prediction, or rupture prediction;
+- no patient data, spatial tissue model, drug-response model, or chronic biology;
+- no local 3D solid stress, crack propagation, physical failure time, diagnosis, treatment guidance, plaque prediction, stent-outcome prediction, or rupture prediction;
 - no physician review, educator study, or clinical validation.
 
 ## References
@@ -220,12 +266,14 @@ The displayed FPS is not a full GPU frame-time benchmark of the separate Three.j
 
 - [Qian, d’Humières & Lallemand (1992)](https://doi.org/10.1209/0295-5075/17/6/001)
 - [Zou & He (1997)](https://doi.org/10.1063/1.869307)
+- [Di Martino et al. (2006), circumferential ex-vivo AAA strength group means](https://pubmed.ncbi.nlm.nih.gov/16520175/)
+- [Raghavan et al. (2006), regional human AAA wall thickness and failure measurements](https://pubmed.ncbi.nlm.nih.gov/16337949/)
 
 ### Public-health and treatment context
 
 - [CDC: High Blood Pressure Facts](https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html)
 - [AHA: Your Guide to Better Blood Pressure Health](https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf)
-- [AHA/ACC: 2025 High Blood Pressure Guideline—Top Things to Know](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
+- [AHA/ACC: 2025 High Blood Pressure Guideline summary](https://professional.heart.org/en/science-news/2025-high-blood-pressure-guideline/top-things-to-know)
 - [FDA: Hypertension](https://www.fda.gov/consumers/health-education-resources/hypertension)
 - [DailyMed: official ACE-inhibitor label](https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=350c6fc9-9774-4d49-9242-19e96944f83b)
 - [FDA: ARB/thiazide prescribing information](https://www.accessdata.fda.gov/drugsatfda_docs/label/2018/020387s063lbl.pdf)

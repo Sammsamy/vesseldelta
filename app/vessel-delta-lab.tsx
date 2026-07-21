@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { comparisonMetricsReady, HemoEngine, wallLoadRatio } from "./hemo-engine.js";
+import { WallStressLab } from "./wall-stress-lab";
 
 const VesselTheatre3D = lazy(() =>
   import("./vessel-theatre-3d").then((module) => ({ default: module.VesselTheatre3D })),
@@ -26,33 +27,33 @@ const CHALLENGES: Array<{
 }> = [
   {
     id: "flow",
-    question: "Where will a narrowing create the fastest modeled flow?",
+    question: "Where does flow move fastest in a narrowed vessel?",
     options: [
-      { id: "throat", label: "At the narrowest throat" },
-      { id: "downstream", label: "Inside the downstream turning field" },
+      { id: "throat", label: "At the tightest spot" },
+      { id: "downstream", label: "Past the tight spot" },
     ],
     correct: "throat",
-    explanation: "Continuity accelerates the modeled jet at the throat; downstream flow can turn while moving more slowly.",
+    explanation: "The same inlet setting is squeezed through a smaller opening, so the fastest jet forms at the tightest spot.",
   },
   {
     id: "pressure",
-    question: "If pressure rises while flow drive stays fixed, what changes here?",
+    question: "If pressure rises but the flow setting stays the same, what changes?",
     options: [
-      { id: "tension", label: "Only the wall-tension index rises" },
-      { id: "jet", label: "The CFD jet automatically accelerates" },
+      { id: "tension", label: "The wall-load number rises" },
+      { id: "jet", label: "The flow speeds up by itself" },
     ],
     correct: "tension",
-    explanation: "Pressure belongs to a separate thin-cylinder P × r wall-tension relation. It is not silently converted into faster CFD flow.",
+    explanation: "Higher pressure raises the separate pressure × vessel-size wall load. It does not make this flow model run faster by itself.",
   },
   {
     id: "rupture",
-    question: "Can the brightest region tell us this vessel will rupture?",
+    question: "What raises wall stress in the simple strength test?",
     options: [
-      { id: "cannot", label: "No—wall-failure inputs are absent" },
-      { id: "threshold", label: "Yes—it marks a rupture threshold" },
+      { id: "threshold", label: "More pressure, a wider bulge, or a thinner wall" },
+      { id: "cannot", label: "A brighter flow color by itself" },
     ],
-    correct: "cannot",
-    explanation: "Rigid-wall CFD has no tissue strength, measured thickness, growth history, or fluid–structure failure law. Color is not rupture risk.",
+    correct: "threshold",
+    explanation: "The real thin-wall equation is stress = pressure × radius ÷ thickness. Compare it with a chosen tissue-strength value in the wall test.",
   },
 ];
 
@@ -403,6 +404,7 @@ export function VesselDeltaLab() {
   const controlRef = useRef<HemoEngine | null>(null);
   const fieldCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
+  const clinicalContextRef = useRef<HTMLDetailsElement | null>(null);
   const particlesRef = useRef<Array<{ x: number; y: number; px: number; py: number; life: number }>>([]);
   const dragSideRef = useRef<"top" | "bottom" | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -638,6 +640,25 @@ export function VesselDeltaLab() {
     setSettling(true);
   };
 
+  const scrollTo = (target: Element | null) => {
+    if (!target) return;
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    target.scrollIntoView({ behavior, block: "start" });
+  };
+
+  const runPublicCase = (next: Scenario) => {
+    setExperienceMode("explore");
+    applyScenario(next);
+    if (next === "hypertension") setRuptureOpen(true);
+    window.requestAnimationFrame(() => scrollTo(document.getElementById("instrument")));
+  };
+
+  const openEverydayPathways = () => {
+    if (!clinicalContextRef.current) return;
+    clinicalContextRef.current.open = true;
+    window.requestAnimationFrame(() => scrollTo(clinicalContextRef.current));
+  };
+
   const deployIdealizedStent = () => {
     if (stentTimerRef.current !== null) window.clearInterval(stentTimerRef.current);
     const active = engineRef.current;
@@ -819,36 +840,36 @@ export function VesselDeltaLab() {
     : !fluxReady
       ? "flux mismatch above 2%"
       : "outside numerical gate";
-  const fieldStatus = settling ? "FIELD RECOMPUTING" : !fluxReady ? "FLUX GATE >2%" : "FIELD EVOLVING";
+  const fieldStatus = settling ? "UPDATING BOTH MODELS" : !fluxReady ? "NUMERICAL CHECK RUNNING" : "LIVE RESULT READY";
 
   const interpretation =
     !comparisonsValid
       ? settling
-        ? "Comparison values are withheld while both fields recompute and inlet/outlet flux mismatch returns below the 2% validation gate."
+        ? "The model is updating and checking that flow entering and leaving still matches. Numbers appear when that check passes."
         : !fluxReady
-          ? "Comparison values are withheld because at least one field remains above the 2% inlet/outlet flux-mismatch gate. Wait for the field; if the warning persists, reset the geometry or reduce flow drive."
-          : "Comparison values are withheld because the current field is outside the instrument’s numerical gate. Reset the geometry or reduce flow drive, then inspect Verify physics."
+          ? "The model is still balancing flow in and flow out. Wait a moment; if this stays visible, reset the vessel or lower the flow setting."
+          : "This shape pushed the model outside its reliable range. Reset the vessel or lower the flow setting, then open Verify physics."
       : scenario === "hypertension"
-      ? `The higher illustrative pressure state raises the relative wall-tension index to ${loadRatio.toFixed(2)}× baseline while the CFD flow drive remains independently controlled.`
+      ? `The higher pressure setting raises relative wall load to ${loadRatio.toFixed(2)}× the straight-vessel baseline. The flow-speed setting did not change.`
       : scenario === "aneurysm" || maxRadiusRatio > 1.18
-      ? `The widened wall raises this model’s relative circumferential wall-tension index to ${loadRatio.toFixed(2)}× baseline. The fluid layer separately shows slower cavity flow and an altered axial near-wall gradient proxy.`
+      ? `The wider section raises relative wall load to ${loadRatio.toFixed(2)}× the straight-vessel baseline. Flow also slows and swirls inside the wider space.`
       : metrics.minDiameterRatio < 0.88
-        ? `In this idealized 2D field, the narrowed lumen produces a ${speedRatio.toFixed(2)}× modeled peak-speed jet and ${shearRatio.toFixed(2)}× axial near-wall gradient proxy relative to the matched reference. Downstream turning is different from the throat gradient.`
-        : "A smooth straight channel produces a near-parabolic velocity profile. Sculpt the wall to create a counterfactual under the same boundary conditions.";
+        ? `At the pinch, the fastest modeled flow is ${speedRatio.toFixed(2)}× the straight-vessel result and the near-wall flow change is ${shearRatio.toFixed(2)}× as large.`
+        : "The straight vessel gives a smooth baseline. Draw the wall to test your own shape under the same flow setting.";
 
   const layerOptions: Array<{ id: Layer; label: string }> = [
-    { id: "velocity", label: "Modeled velocity" },
-    { id: "vorticity", label: "Vorticity" },
-    { id: "shear", label: "Shear proxy" },
-    { id: "wallLoad", label: "Wall tension" },
+    { id: "velocity", label: "Flow speed" },
+    { id: "vorticity", label: "Swirl" },
+    { id: "shear", label: "Near-wall change" },
+    { id: "wallLoad", label: "Relative wall load" },
   ];
 
   const mechanismCopy = {
     ace: {
       eyebrow: "ACE INHIBITOR / ARB",
-      title: "Reduce a vasoconstrictor signal.",
-      body: "ACE inhibitors reduce formation of angiotensin II; ARBs instead block angiotensin II signaling at AT₁ receptors. Both can reduce vasoconstrictor and aldosterone signaling, but they are distinct mechanisms.",
-      boundary: "No fixed drug-response number is sent into the CFD. A hypothetical pressure factor can be explored only in the separate ratio-based wall-tension control—not in the local flow field.",
+      title: "Turn down a vessel-tightening signal.",
+      body: "ACE inhibitors reduce production of angiotensin II. ARBs block one of its receptors. Both can reduce vessel-tightening and salt-retaining signals, but they work at different steps.",
+      boundary: "The live flow does not invent a drug response. You can change the separate pressure input yourself to ask a what-if question.",
       source: "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=350c6fc9-9774-4d49-9242-19e96944f83b",
       sourceLabel: "ACE inhibitor label",
       source2: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2018/020387s063lbl.pdf",
@@ -856,25 +877,25 @@ export function VesselDeltaLab() {
     },
     ccb: {
       eyebrow: "CALCIUM-CHANNEL BLOCKER",
-      title: "Relax vascular smooth muscle.",
-      body: "Long-acting dihydropyridine calcium-channel blockers reduce calcium entry into vascular smooth muscle, allowing systemic resistance vessels to relax.",
-      boundary: "This does not dissolve an atherosclerotic narrowing. VesselDelta leaves the modeled narrowing geometry unchanged.",
+      title: "Help artery muscle relax.",
+      body: "Calcium helps the smooth muscle around arteries contract. These medicines reduce calcium entry, so that muscle can relax and resistance can fall.",
+      boundary: "This does not dissolve plaque. VesselDelta leaves the modeled narrowing unchanged.",
       source: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2019/021540s045lbl.pdf",
       sourceLabel: "FDA prescribing information",
     },
     thiazide: {
       eyebrow: "THIAZIDE-TYPE DIURETIC",
-      title: "Change the renal sodium-volume pathway.",
-      body: "Thiazide-type diuretics increase renal sodium and chloride excretion. Their educational pathway runs through volume and blood pressure—not through local plaque or blood viscosity.",
-      boundary: "The tracer field does not become ‘thinner blood,’ and no medication is recommended for an individual here.",
+      title: "Help the kidneys remove sodium and water.",
+      body: "Thiazide-type diuretics increase sodium and water loss through the kidneys. Over time, that can reduce blood volume and blood pressure.",
+      boundary: "They do not make blood physically thinner in this animation, and VesselDelta does not recommend a medicine.",
       source: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2018/020387s063lbl.pdf",
       sourceLabel: "FDA prescribing information",
     },
     statin: {
       eyebrow: "STATIN · NOT A BP DRUG",
-      title: "Change a long-horizon LDL pathway.",
-      body: "Statins inhibit HMG-CoA reductase and lower LDL through hepatic pathways over time. They do not instantly shrink the modeled narrowing or alter this CFD field.",
-      boundary: "No plaque-regression animation, aneurysm claim, or personal treatment result is produced.",
+      title: "Lower LDL cholesterol over time.",
+      body: "Statins reduce cholesterol production in the liver and help lower LDL. They do not instantly shrink this modeled narrowing or change the live flow field.",
+      boundary: "No plaque-shrinking or personal treatment result is being predicted here.",
       source: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2019/021540s045lbl.pdf",
       sourceLabel: "FDA prescribing information",
     },
@@ -888,11 +909,11 @@ export function VesselDeltaLab() {
           <span>VESSELΔ</span>
         </a>
         <div className="topbar-center" aria-label="Model summary">
-          <span>2D D2Q9 CFD</span>
+          <span>2D LIVE FLOW MODEL</span>
           <i />
-          <span>3D cutaway</span>
+          <span>3D VIEW</span>
           <i />
-          <span>Illustrative</span>
+          <span>EDUCATIONAL</span>
         </div>
         <div className="topbar-actions">
           <button type="button" className="quiet-button" onClick={() => setVerifyOpen(true)}>Verify physics</button>
@@ -904,9 +925,9 @@ export function VesselDeltaLab() {
 
       <section className="hero" id="instrument">
         <div className="hero-copy">
-          <p className="kicker"><span /> Live hemodynamics instrument</p>
-          <h1>Shape the vessel.<br /><em>Watch the flow answer.</em></h1>
-          <p className="hero-deck">Pinch or widen the wall while synchronized local solvers recompute modeled velocity, an axial near-wall gradient proxy, and vorticity against a matched reference.</p>
+          <p className="kicker"><span /> Live vessel experiment</p>
+          <h1>Change a vessel.<br /><em>See what pressure and flow do.</em></h1>
+          <p className="hero-deck">Pinch the vessel and modeled blood forms a faster jet. Widen it and flow swirls. Raise pressure or thin the wall and wall stress climbs.</p>
         </div>
 
         <div className="story-tabs" role="group" aria-label="Vessel stories">
@@ -914,16 +935,17 @@ export function VesselDeltaLab() {
             <button
               key={item}
               type="button"
-              aria-label={item === "healthy" ? "Reference channel" : item === "stenosis" ? "Idealized artery narrowing" : item === "aneurysm" ? "Idealized aortic-like bulge" : "Higher pressure state"}
+              aria-label={item === "healthy" ? "Show the straight reference vessel" : item === "stenosis" ? "Show narrowing and a faster jet" : item === "aneurysm" ? "Show a bulge and swirling flow" : "Open the higher-pressure wall-stress test"}
               aria-pressed={scenario === item && !(item === "healthy" && edited)}
               className={scenario === item && !(item === "healthy" && edited) ? "active" : ""}
               onClick={() => {
                 setExperienceMode("explore");
                 applyScenario(item);
+                if (item === "hypertension") setRuptureOpen(true);
               }}
             >
               <ScenarioIcon type={item} />
-              <span>{item === "healthy" ? "Reference" : item === "stenosis" ? "Artery narrowing" : item === "aneurysm" ? "Aortic-like bulge" : "Higher pressure"}</span>
+              <span>{item === "healthy" ? "Straight vessel" : item === "stenosis" ? "Narrow → fast jet" : item === "aneurysm" ? "Bulge → swirl" : "Pressure ↑ → wall stress ↑"}</span>
             </button>
           ))}
         </div>
@@ -937,7 +959,7 @@ export function VesselDeltaLab() {
             </div>
             <div className="stage-switcher" role="group" aria-label="Choose anatomical or computed view">
               <button type="button" aria-pressed={stageView === "anatomy"} className={stageView === "anatomy" ? "active" : ""} onClick={() => setStageView("anatomy")}>3D interpretation</button>
-              <button type="button" aria-pressed={stageView === "slice"} className={stageView === "slice" ? "active" : ""} onClick={() => setStageView("slice")}>Computed slice</button>
+              <button type="button" aria-pressed={stageView === "slice"} className={stageView === "slice" ? "active" : ""} onClick={() => setStageView("slice")}>Live flow slice</button>
             </div>
             {stageView === "anatomy" ? (
               <Suspense fallback={<div className="theatre-loading"><span>Preparing the 3D interpretation</span></div>}>
@@ -955,8 +977,8 @@ export function VesselDeltaLab() {
             ) : null}
             <div className={`canvas-instruction ${stageView === "slice" && !edited ? "" : "stage-hidden"}`} aria-hidden={edited || stageView !== "slice"}>
               <span className="gesture-ring" />
-              <strong>{edited ? "Keep sculpting" : "Drag either wall or use arrow keys"}</strong>
-              <small>Left/right choose a column · up/down sculpt · ghost line is the control</small>
+              <strong>{edited ? "Keep changing the vessel" : "Drag either vessel wall or use arrow keys"}</strong>
+              <small>Left/right choose a spot · up/down changes it · faint line is the straight comparison</small>
             </div>
             <canvas
               ref={canvasRef}
@@ -976,14 +998,14 @@ export function VesselDeltaLab() {
             </div>
             <div className="canvas-caption">
               <span className="caption-index">{stageView === "anatomy" ? "3D" : "2D"}</span>
-              <p>{stageView === "anatomy" ? `An axisymmetric cutaway wraps a color rendering of the current computed grid without claiming volumetric CFD. ${interpretation}` : interpretation}</p>
+              <p>{stageView === "anatomy" ? `This 3D vessel is shaped from the live 2D flow model. ${interpretation}` : interpretation}</p>
             </div>
           </section>
 
           <aside className="control-rail">
             <div className="experience-switch" role="group" aria-label="Choose guided lab or free exploration">
-              <button type="button" className={experienceMode === "guided" ? "active" : ""} aria-pressed={experienceMode === "guided"} onClick={enterGuidedMode}>Guided lab</button>
-              <button type="button" className={experienceMode === "explore" ? "active" : ""} aria-pressed={experienceMode === "explore"} onClick={() => setExperienceMode("explore")}>Free explore</button>
+              <button type="button" className={experienceMode === "guided" ? "active" : ""} aria-pressed={experienceMode === "guided"} onClick={enterGuidedMode}>45-second tour</button>
+              <button type="button" className={experienceMode === "explore" ? "active" : ""} aria-pressed={experienceMode === "explore"} onClick={() => setExperienceMode("explore")}>Try it yourself</button>
             </div>
 
             {experienceMode === "guided" ? (
@@ -991,16 +1013,16 @@ export function VesselDeltaLab() {
                 {challengeComplete ? (
                   <>
                     <div className="guided-progress complete"><span>LAB COMPLETE</span><i /></div>
-                    <span className="guided-eyebrow">THREE DISTINCTIONS · ONE LIVE MODEL</span>
-                    <h2>Jet ≠ wall tension<br />≠ rupture risk.</h2>
+                    <span className="guided-eyebrow">THREE CHANGES · ONE LIVE MODEL</span>
+                    <h2>Flow, pressure, and wall strength<br />change for different reasons.</h2>
                     <div className="guided-receipt">
-                      <article><span>01</span><p><strong>Narrowing</strong> raises the modeled throat jet and axial near-wall gradient proxy.</p></article>
-                      <article><span>02</span><p><strong>Pressure × radius</strong> changes a separate relative circumferential-tension index.</p></article>
-                      <article><span>03</span><p><strong>Rupture</strong> stays unanswered without tissue failure physics.</p></article>
+                      <article><span>01</span><p><strong>Narrowing</strong> makes the fastest jet at the tightest spot.</p></article>
+                      <article><span>02</span><p><strong>Higher pressure</strong> increases the load carried by the wall.</p></article>
+                      <article><span>03</span><p><strong>Pressure, size, thickness, and strength</strong> set the simple wall-stress margin.</p></article>
                     </div>
                     <p className="guided-boundary">{challengeScore} / {CHALLENGES.length} correct in this local check. This is not a validated assessment or evidence of learning efficacy.</p>
                     <div className="guided-footer-actions">
-                      <button type="button" className="guided-primary" onClick={() => { setExperienceMode("explore"); setStageView("slice"); setLayer("velocity"); window.requestAnimationFrame(() => canvasRef.current?.focus()); }}>Sculpt the computed slice</button>
+                      <button type="button" className="guided-primary" onClick={() => { setExperienceMode("explore"); setStageView("slice"); setLayer("velocity"); window.requestAnimationFrame(() => canvasRef.current?.focus()); }}>Draw your own vessel</button>
                       <button type="button" onClick={resetChallenge}>Run again</button>
                       <button type="button" onClick={() => setLimitsOpen(true)}>Open model receipt</button>
                     </div>
@@ -1008,9 +1030,9 @@ export function VesselDeltaLab() {
                 ) : (
                   <>
                     <div className="guided-progress"><span>STEP {challengeIndex + 1} OF {CHALLENGES.length}</span><i style={{ width: `${((challengeIndex + (revealed ? 1 : 0.35)) / CHALLENGES.length) * 100}%` }} /></div>
-                    <span className="guided-eyebrow">PREDICT BEFORE REVEAL</span>
+                    <span className="guided-eyebrow">MAKE A GUESS, THEN TEST IT</span>
                     <h2>{activeChallenge.question}</h2>
-                    <p className="guided-prompt">Commit to an answer. The control beside the edited vessel keeps the reveal falsifiable.</p>
+                    <p className="guided-prompt">Choose an answer. The model compares the changed vessel with the same straight reference.</p>
                     <div className="guided-options" role="group" aria-label={activeChallenge.question}>
                       {activeChallenge.options.map((option, optionIndex) => (
                         <button key={option.id} type="button" disabled={revealed} aria-pressed={prediction === option.id} className={prediction === option.id ? "selected" : ""} onClick={() => { setPrediction(option.id); setRevealed(false); }}>
@@ -1018,28 +1040,28 @@ export function VesselDeltaLab() {
                         </button>
                       ))}
                     </div>
-                    <button type="button" className="guided-reveal" disabled={!prediction || revealed} onClick={revealChallenge}>Reveal with the live model</button>
+                    <button type="button" className="guided-reveal" disabled={!prediction || revealed} onClick={revealChallenge}>Run the live test</button>
                     {revealed ? (
                       <div className={`guided-result ${prediction === activeChallenge.correct ? "correct" : "learn"}`} role="status" aria-live="polite">
                         <span>{prediction === activeChallenge.correct ? "PREDICTION SUPPORTED" : "MODEL SHOWS A DIFFERENT DISTINCTION"}</span>
                         <p>{activeChallenge.explanation}</p>
                         {activeChallenge.id === "flow" ? (
                           <div className="guided-live-readout">
-                            <small>{comparisonsValid ? "IN-GATE LIVE COMPARISON" : settling ? "FIELDS RECOMPUTING · RATIOS WITHHELD" : "WAITING FOR NUMERICAL GATE"}</small>
-                            <strong>{comparisonsValid ? `${formatRatio(speedRatio)} jet · ${formatRatio(shearRatio)} gradient` : "— · —"}</strong>
+                            <small>{comparisonsValid ? "LIVE COMPARISON PASSED ITS CHECK" : settling ? "BOTH VESSELS ARE UPDATING" : "WAITING FOR THE NUMERICAL CHECK"}</small>
+                            <strong>{comparisonsValid ? `${formatRatio(speedRatio)} faster jet · ${formatRatio(shearRatio)} near-wall change` : "— · —"}</strong>
                           </div>
                         ) : activeChallenge.id === "pressure" ? (
                           <div className="guided-live-readout">
-                            <small>SEPARATE PRESSURE–RADIUS RELATION</small>
-                            <strong>{loadRatio.toFixed(2)}× tension index · CFD drive unchanged</strong>
+                            <small>PRESSURE × VESSEL SIZE</small>
+                            <strong>{loadRatio.toFixed(2)}× wall load · flow setting unchanged</strong>
                           </div>
                         ) : (
-                          <button type="button" className="guided-boundary-button" onClick={() => setRuptureOpen(true)}>Inspect why rupture is not calculated</button>
+                          <button type="button" className="guided-boundary-button" onClick={() => setRuptureOpen(true)}>Open the wall stress &amp; strength test</button>
                         )}
                         <button type="button" className="guided-next" disabled={activeChallenge.id === "flow" && !comparisonsValid} onClick={advanceChallenge}>{activeChallenge.id === "flow" && !comparisonsValid ? "Waiting for gated field" : challengeIndex === CHALLENGES.length - 1 ? "Finish lab" : "Next distinction"}</button>
                       </div>
                     ) : null}
-                    <button type="button" className="guided-skip" onClick={() => setExperienceMode("explore")}>Skip to free exploration</button>
+                    <button type="button" className="guided-skip" onClick={() => setExperienceMode("explore")}>Skip to try it yourself</button>
                   </>
                 )}
               </section>
@@ -1047,8 +1069,8 @@ export function VesselDeltaLab() {
               <>
                 <section className="rail-section layer-section">
                   <div className="rail-heading">
-                    <span>FIELD LENS</span>
-                    <small>Choose what the solver reveals</small>
+                    <span>WHAT DO YOU WANT TO SEE?</span>
+                    <small>Switch the live view</small>
                   </div>
                   <div className="layer-grid">
                     {layerOptions.map((option) => (
@@ -1069,31 +1091,31 @@ export function VesselDeltaLab() {
 
                 <section className="rail-section comparison-section">
                   <div className="rail-heading">
-                    <span>{scenario === "healthy" && edited ? "CUSTOM" : scenario === "stenosis" ? "IDEALIZED NARROWING" : scenario === "aneurysm" ? "AORTIC-LIKE BULGE" : scenario === "hypertension" ? "HIGHER PRESSURE" : "REFERENCE"} VS REFERENCE</span>
+                    <span>{scenario === "healthy" && edited ? "YOUR VESSEL" : scenario === "stenosis" ? "NARROWING" : scenario === "aneurysm" ? "BULGE" : scenario === "hypertension" ? "HIGHER PRESSURE" : "STRAIGHT VESSEL"} VS STRAIGHT</span>
                     <small>same steady flow drive</small>
                   </div>
                   <div className="metric-grid">
-                    <MetricCard eyebrow="Modeled peak speed" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} reference` : unavailableDetail} tone="cyan" />
-                    <MetricCard eyebrow="Peak shear proxy" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} reference` : unavailableDetail} tone="rose" />
-                    <MetricCard eyebrow="Modeled peak vorticity" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : unavailableDetail} tone="amber" />
+                    <MetricCard eyebrow="Fastest flow" value={comparisonsValid ? formatDelta(speedRatio) : "—"} detail={comparisonsValid ? `${formatRatio(speedRatio)} vs. straight vessel` : unavailableDetail} tone="cyan" />
+                    <MetricCard eyebrow="Near-wall flow change" value={comparisonsValid ? formatDelta(shearRatio) : "—"} detail={comparisonsValid ? `${formatRatio(shearRatio)} vs. straight vessel` : unavailableDetail} tone="rose" />
+                    <MetricCard eyebrow="Strongest swirl" value={comparisonsValid ? formatRatio(vorticityRatio) : "—"} detail={comparisonsValid ? (vorticityRatio >= 2 ? "more than doubled" : "local turning") : unavailableDetail} tone="amber" />
                   </div>
-                  {!comparisonsValid ? <p className="metric-gate-warning" role="status">{settling ? "Comparisons withheld · fields recomputing" : !fluxReady ? "Comparisons withheld · flux mismatch above 2% · wait or inspect Verify physics" : "Comparisons withheld · reset geometry or reduce flow drive · inspect Verify physics"}</p> : null}
+                  {!comparisonsValid ? <p className="metric-gate-warning" role="status">{settling ? "Results stay hidden until both models finish updating." : !fluxReady ? "Results stay hidden until both models pass the numerical checks." : "Reset the shape or lower the flow setting, then inspect Verify physics."}</p> : null}
                   {scenario === "stenosis" ? (
                     <button type="button" className="stent-action" onClick={deployIdealizedStent} disabled={stentStatus === "deploying"}>
-                      <span>{stentStatus === "deploying" ? "MORPHING GEOMETRY" : stentStatus === "restored" ? "REPLAY RESTORATION" : "IDEALIZED LUMEN RESTORATION"}</span>
-                      <strong>{stentStatus === "restored" ? "Modeled lumen widened; field recomputing" : "Apply a geometric counterfactual"}</strong>
-                      <small>Geometry counterfactual · not an outcome prediction</small>
+                      <span>{stentStatus === "deploying" ? "WIDENING THE PASSAGE" : stentStatus === "restored" ? "REPLAY THE CHANGE" : "SHOW A WIDER PASSAGE"}</span>
+                      <strong>{stentStatus === "restored" ? "Passage widened; flow updating" : "Widen this modeled narrowing"}</strong>
+                      <small>Shape experiment · not a treatment prediction</small>
                     </button>
                   ) : null}
                 </section>
 
                 <section className="rail-section controls-section">
                   <div className="rail-heading">
-                    <span>TWO INDEPENDENT FORCES</span>
-                    <small>Do not confuse pressure with shear</small>
+                    <span>PRESSURE AND FLOW ARE DIFFERENT</span>
+                    <small>Pressure pushes outward. Flow moves along the wall.</small>
                   </div>
                   <label className="control-row">
-                    <span><b>Flow drive</b><small>sets inlet velocity · live gates withhold out-of-range fields</small></span>
+                    <span><b>Flow setting</b><small>changes the model&apos;s inlet speed</small></span>
                     <output>{Math.round((flowDrive / 0.018) * 100)}%</output>
                     <input
                       data-testid="flow-drive"
@@ -1106,8 +1128,8 @@ export function VesselDeltaLab() {
                     />
                   </label>
                   <label className="control-row pressure-control">
-                    <span><b>Illustrative pressure factor</b><small>ratio only · not a measured BP · does not change CFD</small></span>
-                    <output>{(pressure / 120).toFixed(2)}× baseline</output>
+                    <span><b>Pressure input</b><small>pushes outward · does not change the flow setting</small></span>
+                    <output>{pressure} mm Hg</output>
                     <input
                       data-testid="pressure-factor"
                       type="range"
@@ -1115,16 +1137,17 @@ export function VesselDeltaLab() {
                       max="180"
                       step="5"
                       value={pressure}
-                      aria-label="Illustrative relative pressure factor"
-                      aria-valuetext={`${(pressure / 120).toFixed(2)} times model baseline; illustrative relative pressure, not millimeters of mercury`}
+                      aria-label="Selected teaching pressure"
+                      aria-valuetext={`${pressure} millimeters of mercury selected for the separate wall-load lesson`}
                       onInput={(event) => setPressure(Number(event.currentTarget.value))}
                     />
                   </label>
                   <div className="load-readout">
-                    <span>Relative wall-tension index</span>
+                    <span>Relative wall load</span>
                     <strong>{loadRatio.toFixed(2)}×</strong>
-                    <small>Thin-cylinder relation · not rupture risk</small>
+                    <small>Higher pressure and a larger radius raise it</small>
                   </div>
+                  <button type="button" className="wall-lab-open" onClick={() => setRuptureOpen(true)}>Open wall stress &amp; strength test</button>
                 </section>
               </>
             )}
@@ -1134,41 +1157,81 @@ export function VesselDeltaLab() {
 
       <section className="lesson-section">
         <div className="lesson-intro">
-          <p className="kicker"><span /> The lesson hiding in plain sight</p>
-          <h2>Blood loads a vessel through<br /><em>two distinct mechanics.</em></h2>
-          <p>Flow produces tangential wall shear, while pressure acts normally on the wall and is related to circumferential wall tension. VesselDelta keeps the live axial near-wall gradient proxy separate from a thin-cylinder pressure–radius tension relation.</p>
+          <p className="kicker"><span /> Two forces, one vessel</p>
+          <h2>Flow drags along the wall.<br /><em>Pressure pushes it outward.</em></h2>
+          <p>Pinch the passage and the flow forms a faster jet. Widen it and flow can swirl. More pressure, a wider vessel, or a thinner wall raises the stress carried by the wall.</p>
         </div>
         <div className="force-cards">
           <article className="force-card shear-force">
             <span className="force-index">A</span>
             <div className="force-visual shear-visual"><i /><i /><i /><i /></div>
             <p className="force-kicker">TANGENTIAL</p>
-            <h3>Flow shear</h3>
-            <p>VesselDelta samples the axial velocity inward from the stair-stepped wall. It is a normalized grid proxy, not the true wall-normal derivative on a sloped vessel.</p>
+            <h3>Near-wall flow change</h3>
+            <p>The live solver shows how quickly modeled flow changes next to the wall. Narrowing usually makes that change sharper.</p>
             <code>normalized proxy ∝ ν · Δuₓ/Δy</code>
           </article>
           <article className="force-card pressure-force">
             <span className="force-index">B</span>
             <div className="force-visual pressure-visual"><i /><i /><i /><i /></div>
             <p className="force-kicker">NORMAL PRESSURE → CIRCUMFERENTIAL</p>
-            <h3>Wall tension relation</h3>
-            <p>A separate thin-cylinder relation shows why both higher pressure and a larger radius raise the relative circumferential wall-tension index. This is not a rupture-probability model.</p>
-            <code>relative tension index = P/P₀ · r/r₀</code>
+            <h3>Wall stress and strength</h3>
+            <p>The wall test uses real units to show why more pressure, a wider vessel, or a thinner wall removes mechanical margin.</p>
+            <code>wall stress = pressure · radius / thickness</code>
           </article>
         </div>
         <button type="button" className="rupture-boundary" onClick={() => setRuptureOpen(true)}>
-          <span>MODEL BOUNDARY</span>
-          <strong>Can this model predict rupture?</strong>
-          <small>Open the missing-physics receipt</small>
+          <span>INTERACTIVE TEST</span>
+          <strong>How do pressure, bulging, thickness, and tissue strength combine?</strong>
+          <small>Change all four inputs and cross the selected teaching threshold</small>
         </button>
       </section>
 
-      <details className="clinical-context" id="clinical-context">
+      <section className="public-cases" aria-labelledby="public-cases-title">
+        <div className="public-cases-heading">
+          <div>
+            <p className="kicker"><span /> Four real questions</p>
+            <h2 id="public-cases-title">What changes now?<br /><em>What changes over time?</em></h2>
+          </div>
+          <p>Shape and pressure change the mechanics immediately. Food patterns, activity, and medicines work through body pathways over time. Run each case without mixing those timelines together.</p>
+        </div>
+        <div className="public-case-grid">
+          <button type="button" onClick={() => runPublicCase("stenosis")}>
+            <span><b>01</b> LIVE FLOW</span>
+            <h3>What happens when plaque narrows the passage?</h3>
+            <p>The same flow setting is squeezed through a smaller opening. The model forms a faster jet and a sharper near-wall flow change.</p>
+            <strong>Run the narrowing case →</strong>
+            <small>Models plaque shape, not plaque growth</small>
+          </button>
+          <button type="button" onClick={() => runPublicCase("hypertension")}>
+            <span><b>02</b> WALL MECHANICS</span>
+            <h3>What does higher pressure do to the wall?</h3>
+            <p>Pressure pushes outward. Raise it in the wall lab and the calculated stress rises immediately in real units.</p>
+            <strong>Test pressure, size, and thickness →</strong>
+            <small>Interactive equation, not personal risk</small>
+          </button>
+          <button type="button" onClick={() => runPublicCase("aneurysm")}>
+            <span><b>03</b> BULGE CASE</span>
+            <h3>Why does a wider vessel change two things?</h3>
+            <p>Flow slows and swirls inside the wider space. The larger radius separately raises the wall-stress estimate.</p>
+            <strong>Run the bulge case →</strong>
+            <small>Live flow plus a separate wall equation</small>
+          </button>
+          <button type="button" onClick={openEverydayPathways}>
+            <span><b>04</b> OVER TIME</span>
+            <h3>How can diet, activity, and medicines change pressure?</h3>
+            <p>Explore sodium, DASH-style eating, movement, ACEi or ARB, calcium blockers, thiazides, and statins. Then run a pressure what-if.</p>
+            <strong>Open the evidence pathways →</strong>
+            <small>Source-backed group evidence, not a prescription</small>
+          </button>
+        </div>
+      </section>
+
+      <details ref={clinicalContextRef} className="clinical-context" id="clinical-context">
         <summary>
-          <span className="context-index">OPTIONAL CLINICAL CONTEXT</span>
+          <span className="context-index">WHY HIGH BLOOD PRESSURE MATTERS</span>
           <span className="context-summary-copy">
-            <span className="context-title">Connect the mechanics<br /><em>without diluting the model.</em></span>
-            <span className="context-deck">Open source-linked hypertension burden, sustained lifestyle evidence, and medication pathways. None of these interpretive layers changes the CFD or predicts a person’s response.</span>
+            <span className="context-title">See what can lower pressure<br /><em>over time.</em></span>
+            <span className="context-deck">Open plain-language evidence on high blood pressure, food patterns, sodium, movement, and common medication pathways.</span>
           </span>
           <strong><span className="context-open-label">Open context</span><span className="context-close-label">Close context</span><i>+</i></strong>
         </summary>
@@ -1177,7 +1240,7 @@ export function VesselDeltaLab() {
         <div className="burden-intro">
           <p className="kicker"><span /> Evidence, not alarm</p>
           <h2 id="burden-title">A mechanics lesson for<br /><em>119.9 million adults.</em></h2>
-          <p>Nearly half of U.S. adults meet the CDC hypertension definition. VesselDelta does not diagnose or treat them; it makes one foundational distinction visible: pressure-driven wall load is not the same quantity as flow-related shear.</p>
+          <p>Nearly half of U.S. adults meet the CDC hypertension definition. Pressure pushes a vessel wall outward. Moving blood drags along its inner surface. VesselDelta lets anyone see both mechanics without pretending to diagnose them.</p>
           <a href="https://www.cdc.gov/high-blood-pressure/data-research/facts-stats/index.html" target="_blank" rel="noreferrer">Read the current CDC evidence ↗</a>
         </div>
         <div className="burden-stats">
@@ -1190,8 +1253,8 @@ export function VesselDeltaLab() {
       <section className="evidence-section" aria-labelledby="evidence-title">
         <div className="evidence-heading">
           <p className="kicker"><span /> What sustained habits can change</p>
-          <h2 id="evidence-title">Show the evidence.<br /><em>Do not fake the biology.</em></h2>
-          <p>These are approximate average systolic blood-pressure reductions summarized by the AHA for adults without hypertension. Do not arithmetically sum the displayed ranges into a personal forecast; combined effects vary.</p>
+          <h2 id="evidence-title">Pressure can change over time.<br /><em>A vessel does not redraw itself in seconds.</em></h2>
+          <p>These AHA ranges summarize average changes in the top blood-pressure number for groups of adults without hypertension. They are not a personal forecast and should not be added together.</p>
         </div>
         <div className="evidence-cards">
           <article>
@@ -1209,13 +1272,18 @@ export function VesselDeltaLab() {
           <a href="https://professional.heart.org/en/-/media/files/health-topics/high-blood-pressure/bp-health-guide.pdf" target="_blank" rel="noreferrer">AHA 2025 BP-lowering ranges ↗</a>
           <a href="https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249" target="_blank" rel="noreferrer">AHA/ACC Table 12 population columns ↗</a>
         </div>
+        <button type="button" className="pathway-wall-action" onClick={() => setRuptureOpen(true)}>
+          <span>RUN A LIVE WHAT-IF</span>
+          <strong>Choose a lower or higher pressure and watch wall stress change</strong>
+          <small>You select the value. VesselDelta does not invent a personal diet response.</small>
+        </button>
       </section>
 
       <section className="mechanism-section" aria-labelledby="mechanism-title">
         <div className="mechanism-heading">
-          <p className="kicker"><span /> Treatment mechanism theatre</p>
-          <h2 id="mechanism-title">Watch the pathway.<br /><em>Keep efficacy out of the fiction.</em></h2>
-          <p>Medication classes can be taught without pretending this local vessel predicts a person’s response. The animation is illustrative; the CFD remains unchanged unless the learner independently changes geometry or flow drive.</p>
+          <p className="kicker"><span /> How common medicine classes work</p>
+          <h2 id="mechanism-title">Follow the body pathway.<br /><em>Then test pressure separately.</em></h2>
+          <p>These animations explain what each medicine class changes in the body. They do not predict one person’s response, and they never secretly alter the live flow.</p>
         </div>
         <div className="mechanism-shell">
           <div className="mechanism-tabs" role="group" aria-label="Medication mechanism classes">
@@ -1238,6 +1306,7 @@ export function VesselDeltaLab() {
             <small>{mechanismCopy.boundary}</small>
             <a href={mechanismCopy.source} target="_blank" rel="noreferrer">{mechanismCopy.sourceLabel} ↗</a>
             {"source2" in mechanismCopy ? <a href={mechanismCopy.source2} target="_blank" rel="noreferrer">{mechanismCopy.sourceLabel2} ↗</a> : null}
+            <button type="button" onClick={() => setRuptureOpen(true)}>Run a pressure what-if →</button>
           </article>
         </div>
         <p className="review-disclosure"><strong>Review status</strong> No physician review, educator study, or clinical validation was completed. Educational mechanics only; not medical advice, diagnosis, prediction, or treatment guidance.</p>
@@ -1248,7 +1317,7 @@ export function VesselDeltaLab() {
       <section className="proof-section" id="proof">
         <div className="proof-heading">
           <p className="kicker"><span /> Inspectable, falsifiable, local</p>
-          <h2>Trust the instrument<br />because you can <em>test it.</em></h2>
+          <h2>Trust the instrument<br />{" "}because you can <em>test it.</em></h2>
           <button type="button" className="primary-button" onClick={() => setVerifyOpen(true)}>Open live verification</button>
         </div>
         <div className="proof-grid">
@@ -1261,7 +1330,7 @@ export function VesselDeltaLab() {
 
       <footer>
         <div className="footer-brand"><span className="brand-mark"><i /></span><strong>VESSELΔ</strong></div>
-        <p>A live vascular-mechanics learning instrument. Built with Codex + GPT-5.6.</p>
+        <p>A live vessel experiment for anyone. Built with Codex + GPT-5.6.</p>
         <div><button type="button" onClick={() => setLimitsOpen(true)}>Model limits</button><button type="button" onClick={() => setVerifyOpen(true)}>Verification</button><a href="#proof">Methods</a></div>
       </footer>
 
@@ -1293,10 +1362,10 @@ export function VesselDeltaLab() {
             <p className="modal-kicker">MODEL CARD · READ BEFORE INTERPRETING</p>
             <h2 id="limits-title">Illustrative mechanics,<br />not personal risk.</h2>
             <div className="limits-grid">
-              <article><span>INCLUDES</span><p>2D D2Q9 BGK lattice-Boltzmann flow, rigid no-slip walls, smooth constrained geometry, a normalized axial near-wall gradient proxy, and a separate thin-cylinder pressure–radius relative wall-tension relation. The 3D cutaway revolves that 2D wall profile; RBC-shaped massless tracers follow the computed slice.</p></article>
-              <article><span>DOES NOT INCLUDE</span><p>Patient anatomy, pulsatile flow, compliant or anisotropic tissue, non-Newtonian or cell-resolved blood physics, hematocrit, cell deformation, aggregation, collisions, hemolysis or margination, 3D secondary flow, plaque biology, clotting, a physical time scale, calibrated clinical units, diagnosis, treatment selection or response, or rupture prediction.</p></article>
+              <article><span>INCLUDES</span><p>Live 2D D2Q9 flow, rigid walls, editable geometry, a normalized near-wall flow-change view, and a separate thin-wall stress experiment with pressure, radius, thickness, and a chosen ex-vivo tissue-strength value. The 3D cutaway wraps the computed 2D wall profile.</p></article>
+              <article><span>DOES NOT INCLUDE</span><p>Patient anatomy, pulsatile flow, moving or anisotropic tissue, thrombus, remodeling, local 3D stress concentration, non-Newtonian or cell-resolved blood physics, plaque biology, clotting, diagnosis, treatment selection, personal risk, or clinical rupture prediction.</p></article>
               <article><span>READ COLOR CAREFULLY</span><p>Bright color marks a modeled quantity—not “disease here.” Low, high, and oscillatory shear can each matter in different biological contexts. This instrument cannot tell where plaque will form.</p></article>
-              <article><span>PRESSURE ≠ FLOW SHEAR</span><p>The pressure slider changes only the separate thin-cylinder P × r relative-tension teaching layer. It is not hoop stress and does not silently make the CFD run faster. That separation is the lesson.</p></article>
+              <article><span>PRESSURE ≠ FLOW</span><p>The pressure control changes a separate wall-load lesson and does not silently make the live flow field run faster. The wall test computes σ = P · r / t in real units; its selected tissue strength and tear animation remain illustrative.</p></article>
             </div>
             <p className="citation-note">Methods follow the standard D2Q9 BGK formulation and Zou–He velocity/density boundaries. 3D geometry, medication pathways, and lifestyle evidence are interpretive layers—not additional solver physics. Scientific references and validation scripts are documented in the project README. No physician review or clinical validation was performed. Educational use only; not diagnostic, predictive, or treatment guidance.</p>
             <button type="button" className="modal-primary" onClick={() => setLimitsOpen(false)}>Return to the instrument</button>
@@ -1307,18 +1376,8 @@ export function VesselDeltaLab() {
       {ruptureOpen ? (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setRuptureOpen(false)}>
           <section ref={dialogRef} tabIndex={-1} className="verification-modal rupture-modal" role="dialog" aria-modal="true" aria-labelledby="rupture-title" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" type="button" onClick={() => setRuptureOpen(false)} aria-label="Close rupture boundary">×</button>
-            <p className="modal-kicker">MODEL BOUNDARY · NOT CALCULATED</p>
-            <h2 id="rupture-title">This model<br /><em>cannot answer.</em></h2>
-            <p className="modal-deck">A rigid-wall flow solver has no deforming tissue and no failure criterion. A cinematic tear would look dramatic but would not be physics.</p>
-            <div className="missing-inputs">
-              <article><span>01</span><strong>Wall thickness</strong><p>Not measured or spatially modeled.</p></article>
-              <article><span>02</span><strong>Tissue strength</strong><p>No patient-specific material or failure law.</p></article>
-              <article><span>03</span><strong>Growth and context</strong><p>No patient-specific location, diameter, wall morphology, longitudinal growth, symptoms, smoking history, genetic context, or prior hemorrhage.</p></article>
-              <article><span>04</span><strong>Fluid–structure coupling</strong><p>The displayed wall is deliberately rigid.</p></article>
-            </div>
-            <div className="boundary-equation"><span>Computed: fluid field + relative wall-tension index</span><i /> <span>Not computed: rupture stress, threshold, probability, or timing</span></div>
-            <button type="button" className="modal-primary" onClick={() => setRuptureOpen(false)}>Return to the instrument</button>
+            <button className="modal-close" type="button" onClick={() => setRuptureOpen(false)} aria-label="Close wall stress test">×</button>
+            <div id="rupture-title"><WallStressLab /></div>
           </section>
         </div>
       ) : null}

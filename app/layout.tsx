@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VesselDelta — Shape the vessel. Watch the flow answer.",
+  title: "VesselDelta — Change a vessel. See what pressure and flow do.",
   description:
-    "A browser-native, live hemodynamics learning instrument built with Codex and GPT-5.6.",
+    "A public, browser-native vessel experiment built with Codex and GPT-5.6.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

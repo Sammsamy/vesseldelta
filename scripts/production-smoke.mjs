@@ -67,8 +67,9 @@ try {
   const rootResponse = await waitForServer(server, () => serverOutput);
   const html = await rootResponse.text();
   assert(html.includes("VesselDelta"), "production HTML is missing the product identity");
-  assert(html.includes("2D D2Q9 CFD"), "production HTML is missing the model receipt");
-  assert(html.includes("Guided lab"), "production HTML is missing the default guided experience");
+  assert(html.includes("2D LIVE FLOW MODEL"), "production HTML is missing the public model identity");
+  assert(html.includes("45-second tour"), "production HTML is missing the default guided experience");
+  assert(html.includes("Wall stress and strength"), "production HTML is missing the wall mechanics experiment");
 
   const files = walk(clientRoot).filter((path) => {
     const name = relative(clientRoot, path);
